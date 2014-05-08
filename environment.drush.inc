@@ -5,39 +5,6 @@
  * http://drupal.org/sandbox/ericduran/1154642.
  */
 
-/*
-// Add this to your drushrc file and modify as needed.
-// The option key MUST be enviroments.
-$options['environments'] = array(
-  // #key = The enviroment name.
-  'development' => array(
-    // The list of modules to enabled (1) or disable (0).
-    'modules' => array(
-      'views_ui' => 1,
-      'context_ui' => 1,
-      'devel' => 1,
-      'theme_developer' => 0,
-    ),
-    // The list of variables to configure.
-    'settings' => array(
-      'preprocess_css' => 0,
-      'preprocess_js' => 0,
-    ),
-    // The list of roles to grant (1) and revoke (0) on a per role basis.
-    'permissions' => array(
-      'Administrator' => array (
-        'administer features' => 1,
-        'administer permissions' => 1,
-      ),
-      'anonymous user' => array (
-        'administer features' => 0,
-        'administer permissions' => 0,
-      )
-    ),
-  ),
-);
-*/
-
 /**
  * Implementation of hook_drush_command().
  */
@@ -151,5 +118,3 @@ function _drush_environment_permissions_management($settings = array()) {
 
   }
 }
-
-
