@@ -1,3 +1,4 @@
-- Configure to use 'all' directory to be inheritted into multisites.
-- Fix to work with multisite aliases
+- Configure to use 'all' directory instead of 'default'.
+- Fix to work with multisite aliases.
 - Add quiet mode to supress confirmation messages.
+- Create an example definition.
