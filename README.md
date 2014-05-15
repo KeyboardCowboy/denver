@@ -7,9 +7,9 @@ Define custom blanket environment settings.
 These can be defined in two different files and only apply to the site directory
 in which they are defined.
 
-1. `sites/[all|example.com]/drush/env.drushrc.php`
+1. `sites/[default|example.com]/drush/env.drushrc.php`
 
-2. `sites/[all|example.com]/drush/[dev.]env.drushrc.php`
+2. `sites/[default|example.com]/drush/[dev.]env.drushrc.php`
 
 
 Like aliases, in the first file you can define multiple aliases keyed on the

@@ -1,0 +1,2 @@
+- Configure to use 'all' directory to be inheritted into multisites.
+- Fix to work with multisite aliases

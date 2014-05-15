@@ -56,20 +56,29 @@ function drush_environment($env = NULL) {
   // Separate any combined envs.
   $envs = explode('+', $env);
 
-  // Make sure the ones they specified exists.
+  // Make sure the ones they specified exists.  Bail out if any don't exist.
   foreach ($envs as $_env) {
     if (!isset($environments[$_env])) {
       return drush_set_error('DRUSH_DRUPAL_ERROR_MESSAGE', dt('Unable to locate the environment definition for \'@env.\'', array('@env' => $_env)));
     }
   }
 
+  // Merge multiple definitions
+  $exec = array();
+  if (count($envs) == 1) {
+    $exec = $environments[$envs[0]];
+  }
+  else {
+    foreach ($envs as $_env) {
+      $exec = array_merge_recursive_distinct($exec, $environments[$_env]);
+    }
+  }
+
   // Execute the env settings.
-  foreach ($envs as $_env) {
-    foreach ($environments[$_env] as $type => $options) {
-      $function = "_drush_environment_{$type}_management";
-      if (function_exists($function)) {
-        $function($options);
-      }
+  foreach ($exec as $type => $options) {
+    $function = "_drush_environment_{$type}_management";
+    if (function_exists($function)) {
+      $function($options);
     }
   }
 }
@@ -198,6 +207,23 @@ function _drush_environment_perms_management($settings = array()) {
         '!permissions' => implode(', ', $perm_settings['grant'])
       )));
     }
-
   }
+}
+
+/**
+ * Helper function to recursively merge arrays.
+ */
+function array_merge_recursive_distinct(array &$array1, array &$array2) {
+  $merged = $array1;
+
+  foreach ($array2 as $key => &$value) {
+    if (is_array($value) && isset($merged[$key]) && is_array($merged [$key] )) {
+      $merged[$key] = array_merge_recursive_distinct($merged[$key], $value);
+    }
+    else {
+      $merged[$key] = $value;
+    }
+  }
+
+  return $merged;
 }
