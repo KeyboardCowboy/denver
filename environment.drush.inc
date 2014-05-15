@@ -1,8 +1,6 @@
 <?php
 /**
  * @file
- * This file is based on code found at
- * http://drupal.org/sandbox/ericduran/1154642.
  */
 
 /**
@@ -171,7 +169,7 @@ function _drush_environment_vars_management($settings = array()) {
 /**
  * Drush command helper function used to set permissions.
  */
-function _drush_environment_permissions_management($settings = array()) {
+function _drush_environment_perms_management($settings = array()) {
   foreach ($settings as $role => $perm_settings) {
     // Get the role id based on the role name.
     // $roles = user_roles();
