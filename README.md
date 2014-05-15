@@ -1,8 +1,10 @@
-# Drush Environment Tool
+# Drush Environment Composer
 This is a fork of the sandbox project at https://drupal.org/sandbox/bleen18/1696714
 which is based on the code by Eric Duran at http://drupal.org/sandbox/ericduran/1154642
 
-Define custom blanket environment settings.
+The *D*rush *Env*ironemnt Compos*er* allows you to define blanket settings to apply to
+your site in one command, such as enabling and disabling modules and setting
+variables.
 
 These can be defined in two different files and only apply to the site directory
 in which they are defined.
