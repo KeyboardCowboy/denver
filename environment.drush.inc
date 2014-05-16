@@ -121,8 +121,10 @@ function drush_environment_dir() {
   drush_print(dt('Add your env definition files here: @path', array('@path' => $site_path)));
 
   // Optionally create the directory
-  if (drush_get_option('make')) {
+  if ($name = drush_get_option('make')) {
     drush_mkdir($site_path);
+
+    // @todo: Create new env definition file.
   }
 }
 

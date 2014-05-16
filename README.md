@@ -101,15 +101,3 @@ work (multisite alias support is coming soon).
     `drush env [env-name1]+[env-name2]`
 
     Ex. `drush env dev+chris`
-
-
-## Known Issues
-
-*I'm still learning Drush from the inside, so any pointers on how to fix these
-is greatly appreciated.*
-
-Please see the [issue queue](https://github.com/KeyboardCowboy/denver/issues).
-
-1. Does not work yet with multisite aliases.
-
-2. Single site installations require definition files to be in the `sites/default` instead of `sites/all` folder.
