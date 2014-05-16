@@ -129,8 +129,11 @@ function drush_environment_dir() {
     // Create new env definition file name.
     $filename  = ($name == 1 ? 'env.drushrc.php' : "{$name}.env.drushrc.php");
     $filepath  = "{$site_path}/{$filename}";
-    $localpath = substr($filepath, strpos($filepath, '/sites/'));
 
+    // Get the file path relative to the user's current dir.
+    $localpath = '.' . substr($filepath, strpos($filepath, drush_cwd()) + strlen(drush_cwd()));
+
+    // Create the file, checking for existence first.
     if (file_exists($filepath)) {
       drush_log(dt('The file @name already exists.', array('@name' => $localpath)), 'warning');
     }
