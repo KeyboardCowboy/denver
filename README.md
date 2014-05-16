@@ -80,6 +80,10 @@ from the $env array.
 You must be inside a Drupal site directory or use an alias for these commands to
 work (multisite alias support is coming soon).
 
+1. Create a starter file
+
+    `drush env-dir --make`
+
 1. See which environments are available.
 
     `drush env-list`
