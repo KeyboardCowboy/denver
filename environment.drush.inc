@@ -31,6 +31,17 @@ function environment_drush_command() {
     'aliases' => array('env-list'),
   );
 
+  $items['environment-dir'] = array(
+    'description' => 'Show the directory where env definitions should be placed for this site.',
+    'options' => array(
+      'make' => 'Create the directory if it does not already exist.',
+    ),
+    'examples' => array(
+      'drush env-dir' => 'Print the directory path.',
+    ),
+    'aliases' => array('env-dir'),
+  );
+
   return $items;
 }
 
@@ -103,15 +114,73 @@ function drush_environment_list($env = NULL) {
 }
 
 /**
+ * Command callback.
+ */
+function drush_environment_dir() {
+  $site_path = _drush_environment_site_dir();
+  drush_print(dt('Add your env definition files here: @path', array('@path' => $site_path)));
+
+  // Optionally create the directory
+  if (drush_get_option('make')) {
+    drush_mkdir($site_path);
+  }
+}
+
+/**
  * Helper function to load all the available site environments.
  */
 function _drush_environment_load_env_site(&$environments) {
-  $env_root = drush_site_path() . '/drush';
+  $site_path = _drush_environment_site_dir();
 
   // Scan for environment files
-  foreach (drush_scan_directory($env_root, '/env\.drushrc\.php$/') as $file) {
+  foreach (drush_scan_directory($site_path, '/env\.drushrc\.php$/') as $file) {
     _drush_environment_load_env_file($environments, $file);
   }
+}
+
+/**
+ * Get the path to the site dir.
+ */
+function _drush_environment_site_dir() {
+  $site_path = '';
+
+  // Check for aliases
+  $site_name = drush_sitealias_bootstrapped_site_name();
+  $alias     = drush_sitealias_get_record("@{$site_name}");
+
+  if (floatval(DRUSH_VERSION) > 6.2) {
+    $site_path = drush_sitealias_local_site_path($alias);
+  }
+  else {
+    $supposed_path = drush_sitealias_local_site_path($alias);
+    $hostname      = drush_sitealias_uri_to_site_dir($alias['uri']);
+
+    $site_root = drush_get_context('DRUSH_SELECTED_DRUPAL_ROOT');
+    if (file_exists($site_root . '/sites/sites.php')) {
+      $sites = array();
+
+      include($site_root . '/sites/sites.php');
+
+      // If we found a match in sites.php and the supposed path is sites/default
+      // then replace 'default' with the matching directory.
+      if (isset($sites[$hostname]) && substr($supposed_path, -8) == '/default') {
+        $site_path = str_replace('/default', "/{$sites[$hostname]}", $supposed_path);
+      }
+      else {
+        $site_path = $supposed_path;
+      }
+    }
+    else {
+      $site_path = $supposed_path;
+    }
+  }
+
+  // If the site dir is 'default', switch to 'all'
+  if (substr($site_path, -8) == '/default') {
+    $site_path = str_replace('/default', '/all', $site_path);
+  }
+
+  return $site_path . '/drush';
 }
 
 /**
