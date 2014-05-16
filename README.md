@@ -1,8 +1,8 @@
-# Drush Environment Composer
+# Drupal Environment Personalizer
 This is a fork of the sandbox project at https://drupal.org/sandbox/bleen18/1696714
 which is based on the code by Eric Duran at http://drupal.org/sandbox/ericduran/1154642
 
-The Drush ENVironemnt composER allows you to define blanket settings to apply to
+The Drupal ENVironemnt personalizER allows you to define blanket settings to apply to
 your site in one command, such as enabling and disabling modules and setting
 variables.
 

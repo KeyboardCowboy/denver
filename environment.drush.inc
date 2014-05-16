@@ -32,12 +32,14 @@ function environment_drush_command() {
   );
 
   $items['environment-dir'] = array(
-    'description' => 'Show the directory where env definitions should be placed for this site.',
+    'description' => 'Show and optionally make the directory where env definitions should be placed for this site.',
     'options' => array(
-      'make' => 'Create the directory if it does not already exist.',
+      'make' => 'Create a definition file if it does not already exist.',
     ),
     'examples' => array(
       'drush env-dir' => 'Print the directory path.',
+      'drush env-dir --make' => 'Create a starter env.drushrc.php in the proper directory.',
+      'drush env-dir --make=dev' => 'Create a starter dev.env.drushrc.php in the proper directory.',
     ),
     'aliases' => array('env-dir'),
   );
@@ -118,13 +120,33 @@ function drush_environment_list($env = NULL) {
  */
 function drush_environment_dir() {
   $site_path = _drush_environment_site_dir();
-  drush_print(dt('Add your env definition files here: @path', array('@path' => $site_path)));
 
   // Optionally create the directory
   if ($name = drush_get_option('make')) {
+    // Create the directory if it doesn't already exist.
     drush_mkdir($site_path);
 
-    // @todo: Create new env definition file.
+    // Create new env definition file name.
+    $filename  = ($name == 1 ? 'env.drushrc.php' : "{$name}.env.drushrc.php");
+    $filepath  = "{$site_path}/{$filename}";
+    $localpath = substr($filepath, strpos($filepath, '/sites/'));
+
+    if (file_exists($filepath)) {
+      drush_log(dt('The file @name already exists.', array('@name' => $localpath)), 'warning');
+    }
+    else {
+      $root = dirname(__FILE__);
+      $content = ($name == 1 ? file_get_contents("{$root}/templates/group.inc") : file_get_contents("{$root}/templates/single.inc"));
+      if (file_put_contents($filepath, $content)) {
+        drush_log(dt('The file @name has been created for you!', array('@name' => $localpath)), 'success');
+      }
+      else {
+        drush_log(dt('Unable to create the file @name for you. Sorry!', array('@name' => $localpath)), 'error');
+      }
+    }
+  }
+  else {
+    drush_print(dt('Add your env definition files here: @path', array('@path' => $site_path)));
   }
 }
 
