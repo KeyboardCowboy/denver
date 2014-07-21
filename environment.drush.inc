@@ -87,6 +87,9 @@ function drush_environment($env = NULL) {
     }
   }
 
+  // @todo: Add options to run only certain settings
+  // @see: https://github.com/KeyboardCowboy/denver/issues/5
+
   // Execute the env settings.
   foreach ($exec as $type => $options) {
     $function = "_drush_environment_{$type}_management";
@@ -275,10 +278,9 @@ function _drush_environment_vars_management($settings = array()) {
  * Drush command helper function used to set permissions.
  */
 function _drush_environment_perms_management($settings = array()) {
+  $roles = array_flip(user_roles());
   foreach ($settings as $role => $perm_settings) {
     // Get the role id based on the role name.
-    // $roles = user_roles();
-    $roles = array_flip(user_roles());
     if (isset($roles[$role])) {
       $rid = $roles[$role];
     }
@@ -286,21 +288,30 @@ function _drush_environment_perms_management($settings = array()) {
       return drush_set_error('DRUSH_DRUPAL_ERROR_MESSAGE', dt('That does not exist: !role', array('!role' => $role)));
     }
 
-    // Grant any permissions that need granting.
-    if (!empty($perm_settings['grant'])) {
-      user_role_grant_permissions($rid, $perm_settings['grant']);
-      drush_print(dt('The following permissions have been granted to `!role` users: !permissions', array(
-        '!role' => $rid,
-        '!permissions' => implode(', ', $perm_settings['grant'])
+    // Group the grants and revokes
+    $perms = array('grant' => array(), 'revoke' => array());
+    foreach ($perm_settings as $perm => $grant) {
+      if ($grant) {
+        $perms['grant'][] = $perm;
+      }
+      else {
+        $perms['revoke'][] = $perm;
+      }
+    }
+
+    if (!empty($perms['grant'])) {
+      user_role_grant_permissions($rid, $perms['grant']);
+      drush_print(dt("Granted to '!role': !permissions", array(
+        '!role' => $role,
+        '!permissions' => implode(', ', $perms['grant'])
       )));
     }
 
-    // Revoke any permissions that need revoking.
-    if (!empty($perm_settings['revoke'])) {
-      user_role_revoke_permissions($rid, $perm_settings['revoke']);
-      drush_print(dt('The following permissions have been revoked for `!role` users: !permissions', array(
-        '!role' => $rid,
-        '!permissions' => implode(', ', $perm_settings['grant'])
+    if (!empty($perms['revoke'])) {
+      user_role_revoke_permissions($rid, $perms['revoke']);
+      drush_print(dt("Revoked from '!role': !permissions", array(
+        '!role' => $role,
+        '!permissions' => implode(', ', $perms['revoke'])
       )));
     }
   }
