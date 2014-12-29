@@ -29,6 +29,10 @@ function environment_drush_command() {
       'drush env-list dev' => 'Show the detials of the \'dev\' environment definition.',
     ),
     'aliases' => array('env-list'),
+    'notify' => array(
+      'title' => dt('Environment List'),
+      'message' => dt('Fetched all environments.'),
+    ),
   );
 
   $items['environment-dir'] = array(
@@ -112,8 +116,8 @@ function drush_environment_list($env = NULL) {
   }
   // Print a list of the available env names
   else {
-    foreach (array_keys($environments) as $name) {
-      drush_print($name);
+    foreach ($environments as $name => $env) {
+      drush_print("{$name}: {$env['filename']}");
     }
   }
 }
@@ -160,11 +164,27 @@ function drush_environment_dir() {
  * Helper function to load all the available site environments.
  */
 function _drush_environment_load_env_site(&$environments) {
-  $site_path = _drush_environment_site_dir();
+  $config_paths = array(_drush_environment_site_dir());
+
+  // Find directories to scan for environment config files.
+  foreach (array('custom', 'drupal', 'home.drush', 'system') as $context) {
+    if ($files = _drush_config_file($context, 'env')) {
+      if (is_array($files)) {
+        foreach ($files as $file) {
+          $config_paths[] = dirname($file);
+        }
+      }
+      else {
+        $config_paths[] = dirname($files);
+      }
+    }
+  }
 
   // Scan for environment files
-  foreach (drush_scan_directory($site_path, '/env\.drushrc\.php$/') as $file) {
-    _drush_environment_load_env_file($environments, $file);
+  foreach ($config_paths as $path) {
+    foreach (drush_scan_directory($path, '/env\.drushrc\.php$/') as $file) {
+      _drush_environment_load_env_file($environments, $file);
+    }
   }
 }
 
@@ -225,6 +245,7 @@ function _drush_environment_load_env_file(&$environments, $file) {
   else {
     list($name,,) = explode('.', $file->name);
     $environments[$name] = _drush_environment_extract_env($file->filename);
+    $environments[$name]['filename'] = $file->filename;
   }
 }
 
