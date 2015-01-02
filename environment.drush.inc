@@ -264,10 +264,10 @@ function _drush_environment_modules_management($modules = array()) {
   // Lets build a list of modules to enable and a separate list of modules to disable.
   $enable = $disable = array();
   foreach ($modules as $module_name => $status) {
-    if ($status == 1) {
+    if ($status == 1 && !module_exists($module_name)) {
       $enable[] = $module_name;
     }
-    else {
+    elseif ($status == 0 && module_exists($module_name)) {
       $disable[] = $module_name;
     }
   }
