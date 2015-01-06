@@ -113,9 +113,9 @@ function drush_environment_info($env = NULL) {
   // Print the details of a given env definition if specified.
   // @todo: Split this into a separate command: env-info
   if ($env && isset($environments[$env])) {
-    drush_print_r($environments[$env]);
+    drush_print_format($environments[$env], 'key-value-list');
+    //drush_print_r($environments[$env]);
   }
-  // Print a list of the available env names
   else {
     $data = array();
     foreach ($environments as $name => $env) {
