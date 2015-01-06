@@ -29,9 +29,9 @@ function environment_drush_command() {
       'drush env-list dev' => 'Show the detials of the \'dev\' environment definition.',
     ),
     'aliases' => array('env-list'),
-    'notify' => array(
-      'title' => dt('Environment List'),
-      'message' => dt('Fetched all environments.'),
+    'outputformat' => array(
+      'default' => 'key-value-list',
+      'pipe-format' => 'json',
     ),
   );
 
@@ -111,20 +111,18 @@ function drush_environment_list($env = NULL) {
   _drush_environment_load_env_site($environments);
 
   // Print the details of a given env definition if specified.
-  // @todo: Make this prettier
+  // @todo: Split this into a separate command: env-info
   if ($env && isset($environments[$env])) {
     drush_print_r($environments[$env]);
   }
   // Print a list of the available env names
   else {
-    $longest = 3;
-    foreach (array_keys($environments) as $name) {
-      $longest = max($longest, strlen($name));
+    $data = array();
+    foreach ($environments as $name => $env) {
+      $data['envs'][$name] = $env['filename'];
     }
 
-    foreach ($environments as $name => $env) {
-      drush_print(str_pad($name, $longest, ' ') . " : {$env['filename']}");
-    }
+    return $data;
   }
 }
 
@@ -140,8 +138,8 @@ function drush_environment_dir() {
     drush_mkdir($site_path);
 
     // Create new env definition file name.
-    $filename  = ($name == 1 ? 'env.drushrc.php' : "{$name}.env.drushrc.php");
-    $filepath  = "{$site_path}/{$filename}";
+    $filename = ($name == 1 ? 'env.drushrc.php' : "{$name}.env.drushrc.php");
+    $filepath = "{$site_path}/{$filename}";
 
     // Get the file path relative to the user's current dir.
     $localpath = '.' . substr($filepath, strpos($filepath, drush_cwd()) + strlen(drush_cwd()));
@@ -202,14 +200,14 @@ function _drush_environment_site_dir() {
 
   // Check for aliases
   $site_name = drush_sitealias_bootstrapped_site_name();
-  $alias     = drush_sitealias_get_record("@{$site_name}");
+  $alias = drush_sitealias_get_record("@{$site_name}");
 
   if (floatval(DRUSH_VERSION) > 6.2) {
     $site_path = drush_sitealias_local_site_path($alias);
   }
   else {
     $supposed_path = drush_sitealias_local_site_path($alias);
-    $hostname      = drush_sitealias_uri_to_site_dir($alias['uri']);
+    $hostname = drush_sitealias_uri_to_site_dir($alias['uri']);
 
     $site_root = drush_get_context('DRUSH_SELECTED_DRUPAL_ROOT');
     if (file_exists($site_root . '/sites/sites.php')) {
@@ -256,7 +254,7 @@ function _drush_environment_load_env_file(&$environments, $file) {
   }
   // Load a single definition
   else {
-    list($name,,) = explode('.', $file->name);
+    list($name, ,) = explode('.', $file->name);
     $environments[$name] = _drush_environment_extract_env($file->filename);
     $environments[$name]['filename'] = $file->filename;
   }
@@ -300,7 +298,10 @@ function _drush_environment_vars_management($settings = array()) {
   foreach ($settings as $variable => $value) {
     variable_set($variable, $value);
     if (is_scalar($value)) {
-      drush_print(dt('The "!var" variable has been set to !val.', array('!var' => $variable, '!val' => $value)));
+      drush_print(dt('The "!var" variable has been set to !val.', array(
+        '!var' => $variable,
+        '!val' => $value
+      )));
     }
     else {
       drush_print(dt('The "!var" has been set.', array('!var' => $variable)));
@@ -352,13 +353,20 @@ function _drush_environment_perms_management($settings = array()) {
 }
 
 /**
+ * Format output into a simple list.
+ */
+function _env_format_simple_list($data) {
+
+}
+
+/**
  * Helper function to recursively merge arrays.
  */
 function array_merge_recursive_distinct(array &$array1, array &$array2) {
   $merged = $array1;
 
   foreach ($array2 as $key => &$value) {
-    if (is_array($value) && isset($merged[$key]) && is_array($merged [$key] )) {
+    if (is_array($value) && isset($merged[$key]) && is_array($merged [$key])) {
       $merged[$key] = array_merge_recursive_distinct($merged[$key], $value);
     }
     else {
