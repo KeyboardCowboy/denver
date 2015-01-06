@@ -19,20 +19,28 @@ function environment_drush_command() {
     'aliases' => array('env'),
   );
 
-  $items['environment-info'] = array(
-    'description' => 'Get info about all available environments or the definition of one in particular.',
-    'arguments' => array(
-      'name' => '(optional) The name of an environment definition.',
-    ),
+  $items['environment-list'] = array(
+    'description' => 'Show all available environments.',
     'examples' => array(
-      'drush env-info' => 'Show all available environments.',
-      'drush env-info dev' => 'Show the details of the \'dev\' environment definition.',
+      'drush env-list' => 'Display all available environments and their location.',
     ),
-    'aliases' => array('env-info', 'envin', 'env-list'),
+    'aliases' => array('env-list'),
     'outputformat' => array(
       'default' => 'key-value-list',
       'pipe-format' => 'json',
     ),
+  );
+
+  $items['environment-info'] = array(
+    'description' => 'Get info about a specific environment definition.',
+    'arguments' => array(
+      'name' => 'The name of an environment definition.',
+    ),
+    'examples' => array(
+      'drush env-info' => 'Alias for environment-list.',
+      'drush env-info dev' => 'Show the details of the \'dev\' environment definition.',
+    ),
+    'aliases' => array('env-info', 'envin'),
   );
 
   $items['environment-dir'] = array(
@@ -106,23 +114,59 @@ function drush_environment($env = NULL) {
 /**
  * Command callback.
  */
+function drush_environment_list() {
+  $environments = array();
+  _drush_environment_load_env_site($environments);
+
+  $data = array();
+  foreach ($environments as $name => $env) {
+    $data['env'][$name] = $env['filename'];
+  }
+
+  return $data;
+}
+
+/**
+ * Command callback.
+ */
 function drush_environment_info($env = NULL) {
   $environments = array();
   _drush_environment_load_env_site($environments);
 
   // Print the details of a given env definition if specified.
-  // @todo: Split this into a separate command: env-info
+  // @todo: Is there a formatter than can do this?
   if ($env && isset($environments[$env])) {
-    drush_print_format($environments[$env], 'key-value-list');
-    //drush_print_r($environments[$env]);
-  }
-  else {
-    $data = array();
-    foreach ($environments as $name => $env) {
-      $data['envs'][$name] = $env['filename'];
+    foreach ($environments[$env]['modules'] as &$status) {
+      $status = $status == 0 ? dt('disable') : dt('enable');
     }
 
-    return $data;
+    drush_print(dt('Modules:'));
+    drush_print_format(array($environments[$env]['modules']), 'key-value-list');
+
+    drush_print(dt('Variables:'));
+    drush_print_format(array($environments[$env]['vars']), 'key-value-list');
+
+    drush_print(dt('Permissions:'));
+    foreach ($environments[$env]['perms'] as $role => $perms) {
+      foreach ($environments[$env]['perms'][$role] as &$grant) {
+        $grant = $grant == 0 ? dt('revoke') : dt('grant');
+      }
+
+      drush_print($role);
+      drush_print_format(array($environments[$env]['perms'][$role]), 'key-value-list');
+    }
+  }
+  else {
+    if (empty($env)) {
+      drush_log(dt('Provide an environment definition to view.'));
+    }
+    else {
+      drush_log(dt('Unable to locate \'!name\' environment definition. Try another:', array('!name' => $env)), 'warning', TRUE);
+    }
+
+    // @todo: Do I need to get arguments for the current command to pass into
+    // the invoked command?
+    drush_invoke('environment-list');
   }
 }
 
