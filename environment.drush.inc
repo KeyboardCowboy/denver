@@ -111,13 +111,19 @@ function drush_environment_list($env = NULL) {
   _drush_environment_load_env_site($environments);
 
   // Print the details of a given env definition if specified.
+  // @todo: Make this prettier
   if ($env && isset($environments[$env])) {
     drush_print_r($environments[$env]);
   }
   // Print a list of the available env names
   else {
+    $longest = 3;
+    foreach (array_keys($environments) as $name) {
+      $longest = max($longest, strlen($name));
+    }
+
     foreach ($environments as $name => $env) {
-      drush_print("{$name}: {$env['filename']}");
+      drush_print(str_pad($name, $longest, ' ') . " : {$env['filename']}");
     }
   }
 }
@@ -239,7 +245,14 @@ function _drush_environment_site_dir() {
 function _drush_environment_load_env_file(&$environments, $file) {
   // Look for a group file
   if (stripos($file->name, 'env') === 0) {
-    $environments = array_merge($environments, _drush_environment_extract_env($file->filename));
+    foreach (_drush_environment_extract_env($file->filename) as $name => $env) {
+
+      // Parse filename to shorten to web relative
+      $filename = substr($file->filename, strpos($file->filename, DRUPAL_ROOT) + strlen(DRUPAL_ROOT) + 1);
+
+      $env['filename'] = $filename;
+      $environments[$name] = $env;
+    }
   }
   // Load a single definition
   else {
