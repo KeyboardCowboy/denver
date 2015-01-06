@@ -19,16 +19,16 @@ function environment_drush_command() {
     'aliases' => array('env'),
   );
 
-  $items['environment-list'] = array(
-    'description' => 'List all available environments.',
+  $items['environment-info'] = array(
+    'description' => 'Get info about all available environments or the definition of one in particular.',
     'arguments' => array(
       'name' => '(optional) The name of an environment definition.',
     ),
     'examples' => array(
-      'drush env-list' => 'Show all available environments.',
-      'drush env-list dev' => 'Show the detials of the \'dev\' environment definition.',
+      'drush env-info' => 'Show all available environments.',
+      'drush env-info dev' => 'Show the details of the \'dev\' environment definition.',
     ),
-    'aliases' => array('env-list'),
+    'aliases' => array('env-info', 'envin', 'env-list'),
     'outputformat' => array(
       'default' => 'key-value-list',
       'pipe-format' => 'json',
@@ -45,7 +45,7 @@ function environment_drush_command() {
       'drush env-dir --make' => 'Create a starter env.drushrc.php in the proper directory.',
       'drush env-dir --make=dev' => 'Create a starter dev.env.drushrc.php in the proper directory.',
     ),
-    'aliases' => array('env-dir'),
+    'aliases' => array('env-dir', 'envdir'),
   );
 
   return $items;
@@ -106,7 +106,7 @@ function drush_environment($env = NULL) {
 /**
  * Command callback.
  */
-function drush_environment_list($env = NULL) {
+function drush_environment_info($env = NULL) {
   $environments = array();
   _drush_environment_load_env_site($environments);
 
