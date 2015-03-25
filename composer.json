@@ -2,10 +2,10 @@
     "name": "keyboardcowboy/drush-denver",
     "type": "drush-extension",
     "description": "Customize modules, variables and permissions for each environment.",
-    "license": "GPLv2",
+    "license": "GPL-2.0+",
     "require": {
         "php": ">=5.3.0",
-        "drush/drush": ">=5.*"
+        "drush/drush": ">=5.0.0"
     },
     "authors": [
         {
@@ -14,5 +14,5 @@
         }
     ],
     "keywords": ["drush","environment"],
-    "homepage": "https://github.com/KeyboardCowboy/drush-denver",
+    "homepage": "https://github.com/KeyboardCowboy/drush-denver"
 }
