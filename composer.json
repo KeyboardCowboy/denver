@@ -6,7 +6,7 @@
     "require": {
         "php": ">=5.3.0",
         "drush/drush": ">=5.0.0",
-        "composer-plugin-api": "*",
+        "composer-plugin-api": "*"
     },
     "authors": [
         {
