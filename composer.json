@@ -1,12 +1,11 @@
 {
     "name": "keyboardcowboy/drush-denver",
-    "type": "drush-extension",
+    "type": "drupal-drush",
     "description": "Customize modules, variables and permissions for each environment.",
     "license": "GPL-2.0+",
     "require": {
         "php": ">=5.3.0",
-        "drush/drush": ">=5.0.0",
-        "composer-plugin-api": "*"
+        "composer/installers": "~1.0"
     },
     "authors": [
         {
