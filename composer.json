@@ -2,7 +2,7 @@
     "name": "keyboardcowboy/drush-denver",
     "description": "Customize modules, variables and permissions for each environment.",
     "require": {
-        "drush/drush": "5.x.x"
+        "drush/drush": "5.*"
     },
     "authors": [
         {
