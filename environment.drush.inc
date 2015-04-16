@@ -215,7 +215,8 @@ function _drush_environment_load_env_site(&$environments) {
   $config_paths = array(_drush_environment_site_dir());
 
   // Find directories to scan for environment config files.
-  foreach (array('custom', 'drupal', 'home.drush', 'system') as $context) {
+  // system, 'home.drush', 'drupal', 'custom'
+  foreach (array('custom', 'site', 'drupal', 'home.drush', 'system') as $context) {
     if ($files = _drush_config_file($context, 'env')) {
       if (is_array($files)) {
         foreach ($files as $file) {
@@ -227,6 +228,9 @@ function _drush_environment_load_env_site(&$environments) {
       }
     }
   }
+
+  // Flip the config list for proper hierarchy
+  $config_paths = array_reverse($config_paths);
 
   // Scan for environment files
   foreach ($config_paths as $path) {
@@ -288,11 +292,7 @@ function _drush_environment_load_env_file(&$environments, $file) {
   // Look for a group file
   if (stripos($file->name, 'env') === 0) {
     foreach (_drush_environment_extract_env($file->filename) as $name => $env) {
-
-      // Parse filename to shorten to web relative
-      $filename = substr($file->filename, strpos($file->filename, DRUPAL_ROOT) + strlen(DRUPAL_ROOT) + 1);
-
-      $env['filename'] = $filename;
+      $env['filename'] = _environment_parse_filename($file->filename);
       $environments[$name] = $env;
     }
   }
@@ -300,7 +300,7 @@ function _drush_environment_load_env_file(&$environments, $file) {
   else {
     list($name, ,) = explode('.', $file->name);
     $environments[$name] = _drush_environment_extract_env($file->filename);
-    $environments[$name]['filename'] = $file->filename;
+    $environments[$name]['filename'] = _environment_parse_filename($file->filename);
   }
 }
 
@@ -397,13 +397,6 @@ function _drush_environment_perms_management($settings = array()) {
 }
 
 /**
- * Format output into a simple list.
- */
-function _env_format_simple_list($data) {
-
-}
-
-/**
  * Helper function to recursively merge arrays.
  */
 function array_merge_recursive_distinct(array &$array1, array &$array2) {
@@ -419,4 +412,16 @@ function array_merge_recursive_distinct(array &$array1, array &$array2) {
   }
 
   return $merged;
+}
+
+/**
+ * Helper function to parse the filepath.
+ */
+function _environment_parse_filename($filename) {
+  if (stripos($filename, DRUPAL_ROOT) === 0) {
+    return substr($filename, strpos($filename, DRUPAL_ROOT) + strlen(DRUPAL_ROOT) + 1);
+  }
+  else {
+    return $filename;
+  }
 }
