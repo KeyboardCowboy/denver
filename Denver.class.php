@@ -29,23 +29,33 @@ class Denver {
   }
 
   /**
+   * Whether we found any environment definitions.
+   *
    * @return bool
+   *   TRUE if at least one env def was found.
    */
   public function foundEnvironments() {
     return !empty($this->environments);
   }
 
   /**
+   * Get a list of found environment defs.
+   *
    * @return array
+   *   The full environment defs.
    */
   public function getEnvironments() {
     return $this->environments;
   }
 
   /**
-   * @param $env
+   * Load the desired environments.
+   *
+   * @param string $env
+   *   The environment argument.  May be composite (env1+env2).
    *
    * @return bool
+   *   Whether the environments were loaded.
    */
   public function setEnvironments($env) {
     $envs = (explode('+', $env));
@@ -69,7 +79,13 @@ class Denver {
   }
 
   /**
-   * @param $env
+   * Load an individual environment definition.
+   *
+   * @param string $env
+   *   The single env def name.
+   *
+   * @return bool
+   *   Whether the environment was loaded.
    */
   private function setEnvironment($env) {
     if (isset($this->environments[$env])) {
@@ -82,14 +98,17 @@ class Denver {
   }
 
   /**
+   * Get the composite settings to execute.
+   *
    * @return array
+   *   The composite env definition.
    */
   public function getActiveDefinition() {
     return $this->exec;
   }
 
   /**
-   *
+   * Apply the settings.
    */
   public function exec() {
     foreach ($this->exec as $type => $options) {
@@ -124,9 +143,13 @@ class Denver {
   }
 
   /**
-   * @param $text
+   * Format a nice, readable heading for the user.
+   *
+   * @param string $text
+   *   The raw heading text.
    *
    * @return string
+   *   The formatted heading text.
    */
   public function formatHeading($text) {
     $green = "\033[1;32;40m\033[1m%s\033[0m";
@@ -135,9 +158,12 @@ class Denver {
   }
 
   /**
-   * @param $options
+   * Enable/disable modules.
+   *
+   * @param array $options
+   *   The module info from the env definitions.
    */
-  private function execModules($options) {
+  private function execModules(array $options) {
     $enable = $disable = [];
 
     // Build separate lists of modules to enable and disable.
@@ -168,9 +194,14 @@ class Denver {
   }
 
   /**
-   * @param $options
+   * Set system variables.
+   *
+   * @todo How does this work in Drupal 8?
+   *
+   * @param array $options
+   *   The variables and their values.
    */
-  private function execVariables($options) {
+  private function execVariables(array $options) {
     foreach ($options as $variable => $value) {
       variable_set($variable, $value);
       if (is_scalar($value)) {
@@ -186,11 +217,12 @@ class Denver {
   }
 
   /**
-   * @param $options
+   * Grant/revoke permissions.
    *
-   * @return bool
+   * @param array $options
+   *   The permissions settings.
    */
-  private function execPermissions($options) {
+  private function execPermissions(array $options) {
     $roles = array_flip(user_roles());
 
     foreach ($options as $role => $perm_settings) {
@@ -199,7 +231,8 @@ class Denver {
         $rid = $roles[$role];
       }
       else {
-        return drush_set_error('DRUSH_DRUPAL_ERROR_MESSAGE', dt("Role '!role' does not exist.", ['!role' => $role]));
+        drush_set_error('DRUSH_DRUPAL_ERROR_MESSAGE', dt("Role '!role' does not exist.", ['!role' => $role]));
+        continue;
       }
 
       // Group the grants and revokes.
@@ -232,9 +265,15 @@ class Denver {
   }
 
   /**
-   * @param $commands
+   * Invoke the desired commands.
+   *
+   * @param array $commands
+   *   The commands to invoke.
+   *
+   * @return bool
+   *   FALSE if a command fails.
    */
-  private function execCommands($commands) {
+  private function execCommands(array $commands) {
     // Pass the drushrc file through to drush_invoke_process.
     $default_options = [];
     if ($config = drush_get_option('config-file')) {
@@ -261,10 +300,15 @@ class Denver {
   }
 
   /**
-   * @param $command
-   * @param $info
+   * Format a command as a single line.
+   *
+   * @param string $command
+   *   The command name.
+   * @param array $info
+   *   The command settings.
    *
    * @return string
+   *   The formatted command.
    */
   public function formatCommand($command, $info) {
     $parts = ["drush"];
@@ -294,7 +338,10 @@ class Denver {
   }
 
   /**
-   * @param $env
+   * Load in an environment definition.
+   *
+   * @param string $env
+   *   An environment name.
    */
   private function loadEnvironment($env) {
     $this->exec = array_merge_recursive_distinct($this->exec, $this->environments[$env]);
@@ -302,7 +349,7 @@ class Denver {
   }
 
   /**
-   *
+   * Find the config paths to search for env definitions.
    */
   private function loadConfig() {
     $config_paths = [$this->getSiteDir()];
@@ -327,7 +374,12 @@ class Denver {
   }
 
   /**
+   * Get this site's appropriate drush directory for env vars.
+   *
+   * Optionally, the directory can be created by passing in the --make option.
+   *
    * @return string
+   *   The directory path.
    */
   public function getSiteDir() {
     $site_path = '';
@@ -372,7 +424,7 @@ class Denver {
   }
 
   /**
-   *
+   * Find and load environment definitions.
    */
   private function findEnvironments() {
     foreach ($this->configPaths as $path) {
@@ -383,7 +435,10 @@ class Denver {
   }
 
   /**
-   * @param $file
+   * Extract the contents of an environment definition file.
+   *
+   * @param object $file
+   *   A file object.
    */
   private function loadEnvFile($file) {
     // Look for a group file.
@@ -402,9 +457,13 @@ class Denver {
   }
 
   /**
-   * @param $filename
+   * Parse and prepare the information in an environment file.
    *
-   * @return mixed
+   * @param string $filename
+   *   The filename.
+   *
+   * @return array
+   *   The yaml data parsed into a php array.
    */
   private function extractEnv($filename) {
     // Load the yaml parser.
@@ -427,14 +486,17 @@ class Denver {
       $env['modules'][$status] = array_combine($env['modules'][$status], $env['modules'][$status]);
     }
 
-
     return $env;
   }
 
   /**
-   * @param $filename
+   * Resolve the proper filename for an environment file.
+   *
+   * @param string $filename
+   *   The filename.
    *
    * @return string
+   *   The resolved filename.
    */
   private function parseFilename($filename) {
     if (stripos($filename, DRUPAL_ROOT) === 0) {
