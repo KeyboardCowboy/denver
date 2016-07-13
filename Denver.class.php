@@ -341,7 +341,7 @@ class Denver {
       $info['options'] += $default_options;
 
       // Tell the user we are invoking the command.
-      drush_print($this->formatHeading("✗") . ' ' . $this->formatCommand($command, $info));
+      drush_print("\n" . $this->formatHeading("✗") . ' ' . $this->formatCommand($command, $info));
 
       // Invoke the command.
       if (!drush_invoke_process($info['alias'], $command, $info['arguments'], $info['options'])) {
