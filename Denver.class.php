@@ -8,23 +8,19 @@
  * Manage environment settings and application.
  */
 class Denver {
+  // Store the paths where we should look for environment settings.
   private $configPaths = [];
+
+  // Store the actual environment definitions found.
   private $environments = [];
-  private $requestedEnvs = [];
-  private $exec = [
-    'modules' => [],
-    'variables' => [],
-    'permissions' => [],
-    'commands' => [],
-  ];
+
+  // Store the compiled settings that we need to execute.
+  private $exec = [];
 
   /**
    * Denver constructor.
    */
   public function __construct() {
-    // Load the yaml parser.
-    $this->yaml = new \Drush\Make\Parser\ParserYaml();
-
     // Load the configuration files.
     $this->loadConfig();
 
@@ -77,7 +73,6 @@ class Denver {
    */
   private function setEnvironment($env) {
     if (isset($this->environments[$env])) {
-      $this->requestedEnvs[] = $env;
       $this->loadEnvironment($env);
       return TRUE;
     }
@@ -412,8 +407,11 @@ class Denver {
    * @return mixed
    */
   private function extractEnv($filename) {
+    // Load the yaml parser.
+    $yaml = new \Drush\Make\Parser\ParserYaml();
+
     $data = file_get_contents($filename);
-    $env = $this->yaml->parse($data);
+    $env = $yaml->parse($data);
 
     // Add defaults.
     $env += [
@@ -445,9 +443,5 @@ class Denver {
     else {
       return $filename;
     }
-  }
-
-  public function dump() {
-    drush_print_r($this);
   }
 }
