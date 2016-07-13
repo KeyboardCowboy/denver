@@ -164,7 +164,7 @@ class Denver {
     $definition = $this->getActiveDefinition();
 
     // Print module info.
-    // @todo: Is there a formatter than can do this?
+    // @todo: Is there a formatter that can do this?
     if (!empty($definition['modules'])) {
       $values = [];
       drush_print($this->formatHeading(dt("Modules:")));
@@ -341,7 +341,7 @@ class Denver {
       $info['options'] += $default_options;
 
       // Tell the user we are invoking the command.
-      drush_print($this->formatCommand($command, $info));
+      drush_print($this->formatHeading("✗") . ' ' . $this->formatCommand($command, $info));
 
       // Invoke the command.
       if (!drush_invoke_process($info['alias'], $command, $info['arguments'], $info['options'])) {
@@ -433,8 +433,6 @@ class Denver {
    *   The directory path.
    */
   public function getSiteDir() {
-    $site_path = '';
-
     // Check for aliases
     $site_name = drush_sitealias_bootstrapped_site_name();
     $alias = drush_sitealias_get_record("@{$site_name}");
