@@ -280,13 +280,15 @@ class Denver {
       $default_options['config'] = $config;
     }
 
-    foreach ($commands as $command => $info) {
+    foreach ($commands as $command => &$info) {
+      $info = (array) $info;
+
       // Set some default values for each command.
-      $info += array(
+      $info += [
         'alias' => '@self',
         'arguments' => [],
         'options' => [],
-      );
+      ];
       $info['options'] += $default_options;
 
       // Tell the user we are invoking the command.
