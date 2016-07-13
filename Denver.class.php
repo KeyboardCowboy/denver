@@ -467,7 +467,7 @@ class Denver {
    */
   private function extractEnv($filename) {
     // Load the yaml parser.
-    $yaml = new \Drush\Make\Parser\ParserYaml();
+    $yaml = new \Symfony\Component\Yaml\Yaml();
 
     $data = file_get_contents($filename);
     $env = $yaml->parse($data);
