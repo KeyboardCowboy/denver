@@ -158,6 +158,55 @@ class Denver {
   }
 
   /**
+   * Print a summary of the environment definitions.
+   */
+  public function printSummary() {
+    $definition = $this->getActiveDefinition();
+
+    // Print module info.
+    // @todo: Is there a formatter than can do this?
+    if (!empty($definition['modules'])) {
+      $values = [];
+      drush_print($this->formatHeading(dt("Modules:")));
+
+      foreach ($definition['modules'] as $status => $modules) {
+        $key = dt("!action", ['!action' => ucwords($status)]);
+        $value = implode(', ', $modules);
+        $values[$key] = $value;
+      }
+
+      drush_print_format([$values], 'key-value-list');
+    }
+
+    // Print variable info.
+    if (!empty($definition['variables'])) {
+      drush_print($this->formatHeading(dt("Variables:")));
+      drush_print_format([$definition['variables']], 'key-value-list');
+    }
+
+    // Print permission info.
+    if (!empty($definition['permissions'])) {
+      drush_print($this->formatHeading(dt("Permissions:")));
+      foreach ($definition['permissions'] as $role => $perms) {
+        foreach ($definition['permissions'][$role] as &$grant) {
+          $grant = ($grant == 0) ? dt('revoke') : dt('grant');
+        }
+
+        drush_print($role);
+        drush_print_format([$definition['permissions'][$role]], 'key-value-list');
+      }
+    }
+
+    // Print command info.
+    if (!empty($definition['commands'])) {
+      drush_print($this->formatHeading(dt("Commands:")));
+      foreach ($definition['commands'] as $command => $info) {
+        drush_print(' ' . $this->formatCommand($command, $info));
+      }
+    }
+  }
+
+  /**
    * Enable/disable modules.
    *
    * @param array $options

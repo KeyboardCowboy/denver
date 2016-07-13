@@ -15,9 +15,13 @@ function environment_drush_command() {
     'arguments' => array(
       'environment-name' => 'Predefined environment names created in your env.drushrc.php files.  Combine multiple environment definitions using the plus(+) sign.',
     ),
+    'options' => array(
+      'info' => 'Show the summary of the environment settings instead of running them.',
+    ),
     'examples' => array(
       'drush env dev' => 'Run the dev environment settings.',
       'drush env dev+chris' => 'Run the dev settings then run chris\'s settings.',
+      'drush env dev+chris --info' => "Show the changes that these two environment definitions implement.",
     ),
     'aliases' => array('env'),
   );
@@ -32,18 +36,6 @@ function environment_drush_command() {
       'default' => 'key-value-list',
       'pipe-format' => 'json',
     ),
-  );
-
-  $items['environment-info'] = array(
-    'description' => 'Get info about a specific environment definition.',
-    'arguments' => array(
-      'name' => 'The name of an environment definition.',
-    ),
-    'examples' => array(
-      'drush env-info' => 'Alias for environment-list.',
-      'drush env-info dev' => 'Show the details of the \'dev\' environment definition.',
-    ),
-    'aliases' => array('env-info', 'envin'),
   );
 
   $items['environment-dir'] = array(
@@ -86,7 +78,12 @@ function drush_environment($env = NULL) {
     // @todo: Add options to run only certain settings
     // @see: https://github.com/KeyboardCowboy/denver/issues/5
 
-    $denver->exec();
+    if (drush_get_option('info')) {
+      $denver->printSummary();
+    }
+    else {
+      $denver->exec();
+    }
   }
 }
 
@@ -102,57 +99,6 @@ function drush_environment_list() {
   }
 
   return $data;
-}
-
-/**
- * Command callback.
- */
-function drush_environment_info($env = NULL) {
-  $denver = new Denver();
-  $denver->setEnvironments($env);
-  $definition = $denver->getActiveDefinition();
-
-  // Print module info.
-  // @todo: Is there a formatter than can do this?
-  if (!empty($definition['modules'])) {
-    $values = [];
-    drush_print($denver->formatHeading(dt("Modules:")));
-
-    foreach ($definition['modules'] as $status => $modules) {
-      $key = dt("!action", ['!action' => ucwords($status)]);
-      $value = implode(', ', $modules);
-      $values[$key] = $value;
-    }
-
-    drush_print_format([$values], 'key-value-list');
-  }
-
-  // Print variable info.
-  if (!empty($definition['variables'])) {
-    drush_print($denver->formatHeading(dt("Variables:")));
-    drush_print_format([$definition['variables']], 'key-value-list');
-  }
-
-  // Print permission info.
-  if (!empty($definition['permissions'])) {
-    drush_print($denver->formatHeading(dt("Permissions:")));
-    foreach ($definition['permissions'] as $role => $perms) {
-      foreach ($definition['permissions'][$role] as &$grant) {
-        $grant = ($grant == 0) ? dt('revoke') : dt('grant');
-      }
-
-      drush_print($role);
-      drush_print_format([$definition['permissions'][$role]], 'key-value-list');
-    }
-  }
-
-  // Print command info.
-  if (!empty($definition['commands'])) {
-    drush_print($denver->formatHeading(dt("Commands:")));
-    foreach ($definition['commands'] as $command => $info) {
-      drush_print(' ' . $denver->formatCommand($command, $info));
-    }
-  }
 }
 
 /**
