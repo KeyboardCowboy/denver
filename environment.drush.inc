@@ -116,7 +116,7 @@ function drush_environment_info($env = NULL) {
   // @todo: Is there a formatter than can do this?
   if (!empty($definition['modules'])) {
     $values = [];
-    drush_print(dt('Modules:'));
+    drush_print($denver->formatHeading(dt("Modules:")));
 
     foreach ($definition['modules'] as $status => $modules) {
       $key = dt("!action", ['!action' => ucwords($status)]);
@@ -129,13 +129,13 @@ function drush_environment_info($env = NULL) {
 
   // Print variable info.
   if (!empty($definition['variables'])) {
-    drush_print(dt('Variables:'));
+    drush_print($denver->formatHeading(dt("Variables:")));
     drush_print_format([$definition['variables']], 'key-value-list');
   }
 
   // Print permission info.
   if (!empty($definition['permissions'])) {
-    drush_print(dt('Permissions:'));
+    drush_print($denver->formatHeading(dt("Permissions:")));
     foreach ($definition['permissions'] as $role => $perms) {
       foreach ($definition['permissions'][$role] as &$grant) {
         $grant = ($grant == 0) ? dt('revoke') : dt('grant');
@@ -148,7 +148,7 @@ function drush_environment_info($env = NULL) {
 
   // Print command info.
   if (!empty($definition['commands'])) {
-    drush_print(dt("Commands:"));
+    drush_print($denver->formatHeading(dt("Commands:")));
     foreach ($definition['commands'] as $command => $info) {
       drush_print(' ' . $denver->formatCommand($command, $info));
     }
@@ -180,7 +180,7 @@ function drush_environment_dir() {
     }
     else {
       $root = dirname(__FILE__);
-      $content = ($name == 1 ? file_get_contents("{$root}/templates/group.inc") : file_get_contents("{$root}/templates/single.inc"));
+      $content = ($name == 1 ? file_get_contents("{$root}/templates/group.yml") : file_get_contents("{$root}/templates/single.yml"));
       if (file_put_contents($filepath, $content)) {
         drush_log(dt('The file @name has been created for you!', ['@name' => $localpath]), 'success');
       }

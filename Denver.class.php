@@ -97,13 +97,10 @@ class Denver {
    *
    */
   public function exec() {
-    // Color so we can color code the headings to make them stand out.
-    $green = "\033[1;32;40m\033[1m%s\033[0m";
-
     foreach ($this->exec as $type => $options) {
       if (!empty($options)) {
         // Print a nice heading.
-        $heading = sprintf($green, ucwords($type));
+        $heading = $this->formatHeading($type);
         drush_print("\n{$heading}");
 
         switch ($type) {
@@ -129,6 +126,17 @@ class Denver {
         }
       }
     }
+  }
+
+  /**
+   * @param $text
+   *
+   * @return string
+   */
+  public function formatHeading($text) {
+    $green = "\033[1;32;40m\033[1m%s\033[0m";
+    $heading = sprintf($green, ucwords($text));
+    return $heading;
   }
 
   /**
