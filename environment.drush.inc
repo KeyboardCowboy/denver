@@ -17,11 +17,13 @@ function environment_drush_command() {
     ),
     'options' => array(
       'info' => 'Show the summary of the environment settings instead of running them.',
+      'groups' => 'Run only the certain groups. Separate groups with commas.',
     ),
     'examples' => array(
       'drush env dev' => 'Run the dev environment settings.',
       'drush env dev+chris' => 'Run the dev settings then run chris\'s settings.',
       'drush env dev+chris --info' => "Show the changes that these two environment definitions implement.",
+      'drush env dev --groups=variables,permissions' => "Run only the variables and permissions groups from the dev settings.",
     ),
     'aliases' => array('env'),
   );
@@ -82,7 +84,7 @@ function drush_environment($env = NULL) {
       $denver->printSummary();
     }
     else {
-      $denver->exec();
+      $denver->exec(drush_get_option('groups'));
     }
   }
 }

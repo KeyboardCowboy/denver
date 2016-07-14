@@ -109,10 +109,15 @@ class Denver {
 
   /**
    * Apply the settings.
+   *
+   * @param string $groups
+   *   The groups option as passed in from drush_get_option().
    */
-  public function exec() {
+  public function exec($groups = '') {
+    $_groups = explode(',', $groups);
+
     foreach ($this->exec as $type => $options) {
-      if (!empty($options)) {
+      if (!empty($options) && (empty($_groups) || in_array($type, $_groups))) {
         // Print a nice heading.
         $heading = $this->formatHeading($type);
         drush_print("\n{$heading}");
@@ -254,13 +259,13 @@ class Denver {
     foreach ($options as $variable => $value) {
       variable_set($variable, $value);
       if (is_scalar($value)) {
-        drush_print(dt('The "!var" variable has been set to !val.', array(
+        drush_print(dt("'!var' set to !val.", [
           '!var' => $variable,
           '!val' => $value
-        )));
+        ]));
       }
       else {
-        drush_print(dt('The "!var" has been set.', array('!var' => $variable)));
+        drush_print(dt("'!var' has been set.", ['!var' => $variable]));
       }
     }
   }
