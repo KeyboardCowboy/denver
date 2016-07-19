@@ -120,6 +120,9 @@ function drush_environment_list() {
   return $data;
 }
 
+/**
+ * Command callback.
+ */
 function drush_environment_info($env) {
   $denver = new Denver();
 

@@ -168,13 +168,45 @@ class Denver {
   public function printSummary() {
     $definition = $this->getActiveDefinition();
 
+    // We want to make sure they are printed in the same order as they will run.
+    foreach ($definition as $group => $options) {
+      switch (strtolower($group)) {
+        case 'modules':
+          $this->printModuleSummary($options);
+          break;
+
+        case 'variables':
+          $this->printVariableSummary($options);
+          break;
+
+        case 'permissions':
+          $this->printPermissionSummary($options);
+          break;
+
+        case 'commands':
+          $this->printCommandSummary($options);
+          break;
+
+        default:
+          drush_log(dt("I'm not sure what to do with '@group'.", ['@group' => $group]), 'warning');
+          break;
+      }
+    }
+  }
+
+  /**
+   * Print a summary of the module section.
+   *
+   * @param array $options
+   *   The array of module information from the yaml file.
+   */
+  private function printModuleSummary($options) {
     // Print module info.
-    // @todo: Is there a formatter that can do this?
-    if (!empty($definition['modules'])) {
+    if (!empty($options)) {
       $values = [];
       drush_print($this->formatHeading(dt("Modules:")));
 
-      foreach ($definition['modules'] as $status => $modules) {
+      foreach ($options as $status => $modules) {
         $key = dt("!action", ['!action' => ucwords($status)]);
         $value = implode(', ', $modules);
         $values[$key] = $value;
@@ -182,31 +214,55 @@ class Denver {
 
       drush_print_format([$values], 'key-value-list');
     }
+  }
 
+  /**
+   * Print a summary of the variable section.
+   *
+   * @param array $options
+   *   The array of variable information from the yaml file.
+   */
+  private function printVariableSummary($options) {
     // Print variable info.
-    if (!empty($definition['variables'])) {
+    if (!empty($options)) {
       drush_print($this->formatHeading(dt("Variables:")));
-      drush_print_format([$definition['variables']], 'key-value-list');
+      drush_print_format([$options], 'key-value-list');
     }
+  }
 
+  /**
+   * Print a summary of the permission section.
+   *
+   * @param array $options
+   *   The array of permission information from the yaml file.
+   */
+  private function printPermissionSummary($options) {
     // Print permission info.
-    if (!empty($definition['permissions'])) {
+    if (!empty($options)) {
       drush_print($this->formatHeading(dt("Permissions:")));
-      foreach ($definition['permissions'] as $role => $perms) {
-        foreach ($definition['permissions'][$role] as &$grant) {
+      foreach ($options as $role => $perms) {
+        foreach ($options[$role] as &$grant) {
           $grant = ($grant == 0) ? dt('revoke') : dt('grant');
         }
 
-        drush_print($role);
-        drush_print_format([$definition['permissions'][$role]], 'key-value-list');
+        drush_print($role, 1);
+        drush_print_format([$options[$role]], 'key-value-list');
       }
     }
+  }
 
+  /**
+   * Print a summary of the command section.
+   *
+   * @param array $options
+   *   The array of command information from the yaml file.
+   */
+  private function printCommandSummary($options) {
     // Print command info.
-    if (!empty($definition['commands'])) {
+    if (!empty($options)) {
       drush_print($this->formatHeading(dt("Commands:")));
-      foreach ($definition['commands'] as $command => $info) {
-        drush_print(' ' . $this->formatCommand($command, $info));
+      foreach ($options as $command => $info) {
+        drush_print($this->formatCommand($command, $info), 1);
       }
     }
   }
