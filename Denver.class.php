@@ -120,7 +120,8 @@ class Denver {
       if (!empty($options) && (empty($_groups) || in_array($type, $_groups))) {
         // Print a nice heading.
         $heading = $this->formatHeading($type);
-        drush_print("\n{$heading}");
+        drush_print();
+        drush_print("{$heading}");
 
         switch ($type) {
           case 'modules';
@@ -145,31 +146,28 @@ class Denver {
         }
       }
     }
-  }
 
-  /**
-   * Format a nice, readable heading for the user.
-   *
-   * @param string $text
-   *   The raw heading text.
-   *
-   * @return string
-   *   The formatted heading text.
-   */
-  public function formatHeading($text) {
-    $green = "\033[1;32;40m\033[1m%s\033[0m";
-    $heading = sprintf($green, ucwords($text));
-    return $heading;
+    drush_print();
+    if (drush_get_error()) {
+      drush_set_error('DENVER_ENV_SEUP_FAILEED', dt("The environment was not completely configured the way you wanted.  Check the logs for more details."));
+      drush_print(dt("Use the --groups option to run only certain sections of an environment definition."));
+    }
+    else {
+      return drush_log(dt("Environment setup complete!"), 'success');
+    }
   }
 
   /**
    * Print a summary of the environment definitions.
    */
   public function printSummary() {
-    $definition = $this->getActiveDefinition();
-
     // We want to make sure they are printed in the same order as they will run.
-    foreach ($definition as $group => $options) {
+    foreach ($this->getActiveDefinition() as $group => $options) {
+      // Print a nice heading.
+      $heading = $this->formatHeading($group);
+      drush_print();
+      drush_print("{$heading}");
+
       switch (strtolower($group)) {
         case 'modules':
           $this->printModuleSummary($options);
@@ -188,6 +186,7 @@ class Denver {
           break;
 
         default:
+          drush_print($this->formatHeading($group) . ':');
           drush_log(dt("I'm not sure what to do with '@group'.", ['@group' => $group]), 'warning');
           break;
       }
@@ -204,8 +203,6 @@ class Denver {
     // Print module info.
     if (!empty($options)) {
       $values = [];
-      drush_print($this->formatHeading(dt("Modules:")));
-
       foreach ($options as $status => $modules) {
         $key = dt("!action", ['!action' => ucwords($status)]);
         $value = implode(', ', $modules);
@@ -225,7 +222,6 @@ class Denver {
   private function printVariableSummary($options) {
     // Print variable info.
     if (!empty($options)) {
-      drush_print($this->formatHeading(dt("Variables:")));
       drush_print_format([$options], 'key-value-list');
     }
   }
@@ -239,7 +235,6 @@ class Denver {
   private function printPermissionSummary($options) {
     // Print permission info.
     if (!empty($options)) {
-      drush_print($this->formatHeading(dt("Permissions:")));
       foreach ($options as $role => $perms) {
         foreach ($options[$role] as &$grant) {
           $grant = ($grant == 0) ? dt('revoke') : dt('grant');
@@ -260,7 +255,6 @@ class Denver {
   private function printCommandSummary($options) {
     // Print command info.
     if (!empty($options)) {
-      drush_print($this->formatHeading(dt("Commands:")));
       foreach ($options as $command => $info) {
         drush_print($this->formatCommand($command, $info), 1);
       }
@@ -411,6 +405,23 @@ class Denver {
 
       drush_print();
     }
+  }
+
+  /**
+   * Format a nice, readable heading for the user.
+   *
+   * @param string $text
+   *   The raw heading text.
+   * @param $line_ending
+   *   A string to end the heading with.
+   *
+   * @return string
+   *   The formatted heading text.
+   */
+  public function formatHeading($text, $line_ending = ":") {
+    $green = "\033[1;32;40m\033[1m%s{$line_ending}\033[0m";
+    $heading = sprintf($green, ucwords($text));
+    return $heading;
   }
 
   /**
