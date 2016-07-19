@@ -438,6 +438,10 @@ class Denver {
    *   The directory path.
    */
   public function getSiteDir() {
+    if (!drush_has_boostrapped(DRUSH_BOOTSTRAP_DRUPAL_SITE)) {
+      return FALSE;
+    }
+
     // Check for aliases
     $site_name = drush_sitealias_bootstrapped_site_name();
     $alias = drush_sitealias_get_record("@{$site_name}");

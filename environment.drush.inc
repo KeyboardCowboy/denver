@@ -12,6 +12,7 @@ require_once __DIR__ . "/Denver.class.php";
 function environment_drush_command() {
   $items['environment'] = array(
     'description' => 'Enable settings for a specific environment.',
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
     'arguments' => array(
       'environment-name' => 'Predefined environment names created in your env.drushrc.php files.  Combine multiple environment definitions using the plus(+) sign.',
     ),
@@ -30,6 +31,7 @@ function environment_drush_command() {
 
   $items['environment-list'] = array(
     'description' => 'Show all available environments.',
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
     'examples' => array(
       'drush env-list' => 'Display all available environments and their location.',
     ),
@@ -40,8 +42,23 @@ function environment_drush_command() {
     ),
   );
 
+  $items['environment-info'] = array(
+    'description' => 'Get info about a specific environment definition.',
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+    'arguments' => array(
+      'name' => 'The name of an environment definition or compound definitions.',
+    ),
+    'argument required' => TRUE,
+    'examples' => array(
+      'drush env-info dev' => dt("Show the details of the 'dev' environment definition."),
+      'drush env-info dev+chris' => dt("Show the details of the 'dev' and 'local' environment definitions combined."),
+    ),
+    'aliases' => array('env-info', 'envin'),
+  );
+
   $items['environment-dir'] = array(
     'description' => 'Show and optionally make the directory where env definitions should be placed for this site.',
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_SITE,
     'options' => array(
       'make' => 'Create a definition file if it does not already exist.',
     ),
@@ -98,6 +115,23 @@ function drush_environment_list() {
   }
 
   return $data;
+}
+
+function drush_environment_info($env) {
+  $denver = new Denver();
+
+  // Make sure we found at least one environment definition.
+  if (!$denver->foundEnvironments()) {
+    return drush_set_error('DRUSH_DRUPAL_ERROR_MESSAGE', dt('Unable to find any environment definitions.'));
+  }
+
+  // Set the definition and prepare the environment instructions.
+  if ($denver->setEnvironments($env)) {
+    $denver->printSummary();
+  }
+  else {
+    drush_log(dt("Unable to lookup environments '@envs'", ['@envs' => $env]));
+  }
 }
 
 /**
