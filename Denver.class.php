@@ -114,7 +114,7 @@ class Denver {
    *   The groups option as passed in from drush_get_option().
    */
   public function exec($groups = '') {
-    $_groups = explode(',', $groups);
+    $_groups = !empty($groups) ? explode(',', $groups) : array();
 
     foreach ($this->exec as $type => $options) {
       if (!empty($options) && (empty($_groups) || in_array($type, $_groups))) {
@@ -346,12 +346,14 @@ class Denver {
       $info['options'] += $default_options;
 
       // Tell the user we are invoking the command.
-      drush_print("\n" . $this->formatHeading("✗") . ' ' . $this->formatCommand($command, $info));
+      drush_print($this->formatHeading("✗") . ' ' . $this->formatCommand($command, $info));
 
       // Invoke the command.
       if (!drush_invoke_process($info['alias'], $command, $info['arguments'], $info['options'])) {
         return drush_set_error('COMMAND_FAILED', dt("Failed to execute drush command @command.", ['@command' => $command]));
       }
+
+      drush_print();
     }
   }
 

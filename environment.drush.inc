@@ -81,7 +81,7 @@ function drush_environment($env = NULL) {
 
   // Make sure we found at least one environment definition.
   if (!$denver->foundEnvironments()) {
-    return drush_set_error('DRUSH_DRUPAL_ERROR_MESSAGE', dt('Unable to find any environment definitions.'));
+    return drush_log(dt('Unable to find any environment definitions.'), 'error', TRUE);
   }
 
   // If no environment was specified, provide a list.
@@ -89,7 +89,7 @@ function drush_environment($env = NULL) {
     $data = drush_environment_list();
     drush_print_format($data, 'key-value-list');
 
-    return drush_set_error('DRUSH_DRUPAL_ERROR_MESSAGE', dt('You need to specify at least one environment definition.'));
+    return drush_log(dt('You need to specify at least one environment definition.'), 'error', TRUE);
   }
 
   // Set the definition and prepare the environment instructions.
@@ -100,6 +100,9 @@ function drush_environment($env = NULL) {
     else {
       $denver->exec(drush_get_option('groups'));
     }
+  }
+  else {
+    drush_log(dt("There was an error building the definition for '@env'.", ['@env' => $env]), 'error', TRUE);
   }
 }
 
@@ -122,7 +125,7 @@ function drush_environment_info($env) {
 
   // Make sure we found at least one environment definition.
   if (!$denver->foundEnvironments()) {
-    return drush_set_error('DRUSH_DRUPAL_ERROR_MESSAGE', dt('Unable to find any environment definitions.'));
+    return drush_log(dt('Unable to find any environment definitions.'), 'error', TRUE);
   }
 
   // Set the definition and prepare the environment instructions.
