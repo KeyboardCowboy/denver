@@ -293,7 +293,7 @@ class Denver {
     }
 
     if (empty($enable) && empty($disable)) {
-      drush_print(dt("All modules are in their desired state.  Probably Rhode Island."));
+      drush_print(dt("All modules are in their desired state.  Probably Colorado."));
     }
   }
 
