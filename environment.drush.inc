@@ -77,9 +77,6 @@ function drush_environment($env = NULL) {
 
   // Set the definition and prepare the environment instructions.
   if ($denver->setEnvironments($env)) {
-    // @todo: Add options to run only certain settings
-    // @see: https://github.com/KeyboardCowboy/denver/issues/5
-
     if (drush_get_option('info')) {
       $denver->printSummary();
     }
