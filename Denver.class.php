@@ -307,15 +307,22 @@ class Denver {
    */
   private function execVariables(array $options) {
     foreach ($options as $variable => $value) {
-      variable_set($variable, $value);
-      if (is_scalar($value)) {
-        drush_print(dt("'!var' set to !val.", [
-          '!var' => $variable,
-          '!val' => $value
-        ]));
+      if ($value === '[DELETE]') {
+        variable_del($variable);
+        drush_print(dt("'@var' was deleted.", ['@var' => $variable]));
       }
       else {
-        drush_print(dt("'!var' has been set.", ['!var' => $variable]));
+        variable_set($variable, $value);
+
+        if (is_scalar($value)) {
+          drush_print(dt("'@var' set to @val.", [
+            '@var' => $variable,
+            '@val' => $value
+          ]));
+        }
+        else {
+          drush_print(dt("'@var' has been set.", ['@var' => $variable]));
+        }
       }
     }
   }
