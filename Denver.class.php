@@ -149,7 +149,7 @@ class Denver {
 
     drush_print();
     if (drush_get_error()) {
-      drush_set_error('DENVER_ENV_SEUP_FAILEED', dt("The environment was not completely configured the way you wanted.  Check the logs for more details."));
+      drush_set_error('DENVER_ENV_SEUP_FAILEED', dt("The environment may not have been configured the way you wanted.  Check the logs for more details."));
       drush_print(dt("Use the --groups option to run only certain sections of an environment definition."));
     }
     else {
