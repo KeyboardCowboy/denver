@@ -604,8 +604,8 @@ class Denver {
     $yaml = new \Symfony\Component\Yaml\Yaml();
 
     $data = file_get_contents($filename);
-    $env = $yaml->parse($data);
-
+    $env = (array) $yaml->parse($data);
+    
     // Add defaults.
     $env += [
       'modules' => [],
@@ -640,4 +640,5 @@ class Denver {
       return $filename;
     }
   }
+
 }
