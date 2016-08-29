@@ -27,9 +27,9 @@ Extract this repository into any of Drush's searchable paths for plugins:
 These can be defined in two different files and only apply to the site directory
 in which they are defined.
 
-1. `sites/[default|example.com]/drush/env.drushrc.php`
+1. `sites/[default|example.com]/drush/env.drushrc.yml`
 
-2. `sites/[default|example.com]/drush/[dev.]env.drushrc.php`
+2. `sites/[default|example.com]/drush/[dev.]env.drushrc.yml`
 
 
 Like aliases, in the first file you can define multiple aliases keyed on the
@@ -39,40 +39,53 @@ definition name.
 
 The definitions are formatted as such:
 
-    $env['dev'] = array(
-      // The list of modules to enabled (1) or disable (0).
-      'modules' => array(
-        'devel'       => 1,
-        'securepages' => 0,
-      ),
+	# Settings for your local environment.
+	local:
+	  modules:
+		enable:
+		  - module_name
+		disable:
+		  - module_name
+	
+	  variables:
+		your_var: your_var_value
+	
+	  permissions:
+		RoleName:
+		  permission_name: 0
+	
+	  commands:
+		command-name:
+		  alias: @self
+		  arguments:
+			arg1: arg1-val
+		  options:
+			opt1: opt1-val
 
-      // The list of variables to configure.
-      'vars' => array(
-        'preprocess_css' => 0,
-        'preprocess_js'  => 0,
-      ),
+OR if using a named file like dev.env.drushrc.yml, simply remove the leading
+item from the list.
 
-      // The list of roles to grant (1) and revoke (0) on a per role basis.
-      'perms' => array(
-        'Administrator' => array (
-          'administer features' => 1,
-          'administer permissions' => 1,
-        ),
-        'anonymous user' => array (
-          'administer features' => 0,
-          'administer permissions' => 0,
-        )
-      ),
-    );
-
-OR if using a named file like dev.env.drushrc.php, simply remove the name key
-from the $env array.
-
-    $env = array(
-      'modules' => array(),
-      'vars'    => array(),
-      'perms'   => array(),
-    );
+	# Settings for your local environment.
+	modules:
+	  enable:
+		- module_name
+	  disable:
+		- module_name
+	
+	variables:
+	  your_var: your_var_value
+	
+	permissions:
+	  RoleName:
+		permission_name: 0
+	
+	commands:
+	  command-name:
+		alias: @self
+		arguments:
+		  arg1: arg1-val
+		options:
+		  opt1: opt1-val
 
 
 ## How to Use It
