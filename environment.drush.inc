@@ -94,11 +94,18 @@ function drush_environment($env = NULL) {
 
   // Set the definition and prepare the environment instructions.
   if ($denver->setEnvironments($env)) {
-    if (drush_get_option('info')) {
-      $denver->printSummary();
-    }
-    else {
-      $denver->exec(drush_get_option('groups'));
+    // Show the user what will happen if this is run.
+    $denver->printSummary();
+
+    // If the --info option was passed, skip the execution phase.
+    if (!drush_get_option('info')) {
+      // Everything is a go. Confirm the user is ready to launch.
+      if (drush_confirm(dt("Are you ready to configure your environment?"))) {
+        $denver->exec(drush_get_option('groups'));
+      }
+      else {
+        return drush_user_abort(dt("Nevermind."));
+      }
     }
   }
 }
