@@ -101,9 +101,6 @@ function drush_environment($env = NULL) {
       $denver->exec(drush_get_option('groups'));
     }
   }
-  else {
-    drush_log(dt("There was an error building the definition for '@env'.", ['@env' => $env]), 'error', TRUE);
-  }
 }
 
 /**
