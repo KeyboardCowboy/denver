@@ -401,14 +401,8 @@ class Denver {
     }
 
     foreach ($commands as $command => &$info) {
-      $info = (array) $info;
-
-      // Set some default values for each command.
-      $info += [
-        'alias' => '@self',
-        'arguments' => [],
-        'options' => [],
-      ];
+      // Prepare the command.
+      $this->prepareCommand($info);
       $info['options'] += $default_options;
 
       // Tell the user we are invoking the command.
@@ -452,8 +446,9 @@ class Denver {
    *   The formatted command.
    */
   public function formatCommand($command, $info) {
-    $parts = ["drush"];
+    $this->prepareCommand($info);
 
+    $parts = ["drush"];
     $parts[] = !empty($info['alias']) ? $info['alias'] : '@self';
     $parts[] = $command;
 
@@ -476,6 +471,37 @@ class Denver {
     }
 
     return implode(' ', $parts);
+  }
+
+  /**
+   * Prepare the command data for output and execution.
+   *
+   * @param array $info
+   *    A command definition pulled from the YAML file.
+   */
+  private function prepareCommand(array &$info) {
+    $info = (array) $info;
+
+    // Set some default values for each command.
+    $info += [
+      'alias' => '@self',
+      'arguments' => [],
+      'options' => [],
+    ];
+
+    // Convert argument value arrays to comma separated strings.
+    foreach ($info['arguments'] as &$value) {
+      if (is_array($value)) {
+        $value = implode(',', $value);
+      }
+    }
+
+    // Convert option value arrays to comma separated strings.
+    foreach ($info['options'] as &$value) {
+      if (is_array($value)) {
+        $value = implode(',', $value);
+      }
+    }
   }
 
   /**
