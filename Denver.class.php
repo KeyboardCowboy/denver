@@ -64,7 +64,8 @@ class Denver {
       if (!$this->setEnvironment($_env)) {
         $msg = dt("Unable to locate an environment definition for '@env'.", ['@env' => $_env]);
         if (empty($envs)) {
-          return drush_set_error('DRUSH_DRUPAL_ERROR_MESSAGE', $msg);
+          drush_log($msg, 'warning');
+          return FALSE;
         }
         else {
           drush_log($msg, 'warning');
