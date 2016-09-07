@@ -299,7 +299,7 @@ class Denver {
 
     // Disable modules.
     if (!empty($disable)) {
-      drush_invoke_process(NULL, 'pm-disable', ['extensions' => implode(',', $enable)], ['yes' => TRUE]);
+      drush_invoke_process(NULL, 'pm-disable', ['extensions' => implode(',', $disable)], ['yes' => TRUE]);
     }
 
     if (empty($enable) && empty($disable)) {
