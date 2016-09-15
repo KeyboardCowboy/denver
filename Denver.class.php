@@ -679,7 +679,7 @@ class Denver {
    *   The resolved filename.
    */
   private function parseFilename($filename) {
-    if (stripos($filename, DRUPAL_ROOT) === 0) {
+    if (defined('DRUPAL_ROOT') && stripos($filename, DRUPAL_ROOT) === 0) {
       return substr($filename, strpos($filename, DRUPAL_ROOT) + strlen(DRUPAL_ROOT) + 1);
     }
     else {
