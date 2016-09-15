@@ -520,6 +520,7 @@ class Denver {
    * Find the config paths to search for env definitions.
    */
   private function loadConfig() {
+    drush_log(dt('Loading config paths.'), 'debug');
     $config_paths = [$this->getSiteDir()];
 
     // Find directories to scan for environment config files.
@@ -539,6 +540,7 @@ class Denver {
 
     // Flip the config list for proper hierarchy
     $this->configPaths = array_reverse($config_paths);
+    drush_log(dt('Loaded config paths.'), 'debug');
   }
 
   /**
@@ -597,11 +599,16 @@ class Denver {
    * Find and load environment definitions.
    */
   private function findEnvironments() {
+    drush_log(dt('Loading environment files.'), 'debug');
+
     foreach ($this->configPaths as $path) {
+      drush_log(dt("Scanning !path.", ['!path' => $path]), 'debug');
       foreach (drush_scan_directory($path, '/env\.drushrc\.y(a)?ml/') as $file) {
         $this->loadEnvFile($file);
       }
     }
+
+    drush_log(dt('Loaded environment files.'), 'debug');
   }
 
   /**
