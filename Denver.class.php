@@ -524,7 +524,7 @@ class Denver {
 
     // Find directories to scan for environment config files.
     // system, 'home.drush', 'drupal', 'custom'
-    foreach (['custom', 'site', 'drupal', 'home.drush', 'system'] as $context) {
+    foreach (['custom', 'drupal', 'home.drush', 'system'] as $context) {
       if ($files = _drush_config_file($context, 'env')) {
         if (is_array($files)) {
           foreach ($files as $file) {
