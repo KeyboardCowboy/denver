@@ -621,19 +621,9 @@ class Denver {
    *   A file object.
    */
   private function loadEnvFile($file) {
-    // Look for a group file.
-    if (stripos($file->name, 'env') === 0) {
-      foreach ($this->extractEnv($file->filename) as $name => $env) {
-        $env['filename'] = $this->parseFilename($file->filename);
-        $this->environments[$name] = $env;
-      }
-    }
-    // Load a single definition.
-    else {
-      list($name, ,) = explode('.', $file->name);
-      $this->environments[$name] = $this->extractEnv($file->filename);
-      $this->environments[$name]['filename'] = $this->parseFilename($file->filename);
-    }
+    list($name, ,) = explode('.', $file->name);
+    $this->environments[$name] = $this->extractEnv($file->filename);
+    $this->environments[$name]['filename'] = $this->parseFilename($file->filename);
   }
 
   /**
