@@ -538,6 +538,9 @@ class Denver {
       }
     }
 
+    // Remove any empty values.
+    $config_paths = array_filter($config_paths);
+
     // Flip the config list for proper hierarchy
     $this->configPaths = array_reverse($config_paths);
     drush_log(dt('Loaded config paths.'), 'debug');
