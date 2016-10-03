@@ -440,7 +440,7 @@ class Denver {
    *
    * @param string $command
    *   The command name.
-   * @param array $info
+   * @param array|null $info
    *   The command settings.
    *
    * @return string
@@ -477,10 +477,10 @@ class Denver {
   /**
    * Prepare the command data for output and execution.
    *
-   * @param array $info
+   * @param array|null $info
    *    A command definition pulled from the YAML file.
    */
-  private function prepareCommand(array &$info) {
+  private function prepareCommand(&$info) {
     $info = (array) $info;
 
     // Set some default values for each command.
@@ -590,7 +590,7 @@ class Denver {
       }
     }
 
-    // If the site dir is 'default', switch to 'all'
+    // If the site dir is 'default', switch to 'all'.
     if (substr($site_path, -8) == '/default') {
       $site_path = str_replace('/default', '/all', $site_path);
     }
