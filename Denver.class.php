@@ -17,6 +17,9 @@ class Denver {
   // Store the compiled settings that we need to execute.
   private $exec = [];
 
+  // Store the loaded environment filepaths.
+  private $loadedEnvs = [];
+
   /**
    * Denver constructor.
    */
@@ -162,6 +165,14 @@ class Denver {
    * Print a summary of the environment definitions.
    */
   public function printSummary() {
+    drush_print();
+
+    // Print env files used for this definition.
+    drush_print($this->formatHeading('Environments'));
+    foreach ($this->loadedEnvs as $filename) {
+      drush_print("{$filename}", 1);
+    }
+
     drush_print();
 
     // We want to make sure they are printed in the same order as they will run.
@@ -513,6 +524,7 @@ class Denver {
    */
   private function loadEnvironment($env) {
     $this->exec = array_merge_recursive_distinct($this->exec, $this->environments[$env]);
+    $this->loadedEnvs[] = $this->exec['filename'];
     unset($this->exec['filename']);
   }
 
