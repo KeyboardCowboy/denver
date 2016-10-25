@@ -38,33 +38,6 @@ define each environment in a separate file and prefix the filename with the
 definition name.
 
 The definitions are formatted as such:
-
-	# Settings for your local environment.
-	local:
-	  modules:
-		enable:
-		  - module_name
-		disable:
-		  - module_name
-	
-	  variables:
-		your_var: your_var_value
-	
-	  permissions:
-		RoleName:
-		  permission_name: 0
-	
-	  commands:
-		command-name:
-		  alias: @self
-		  arguments:
-			arg1: arg1-val
-		  options:
-			opt1: opt1-val
-
-OR if using a named file like dev.env.drushrc.yml, simply remove the leading
-item from the list.
-
 	# Settings for your local environment.
 	modules:
 	  enable:
@@ -91,7 +64,7 @@ item from the list.
 ## How to Use It
 
 You must be inside a Drupal site directory or use an alias for these commands to
-work (multisite alias support is coming soon).
+work.
 
 1. Create a starter file
 
