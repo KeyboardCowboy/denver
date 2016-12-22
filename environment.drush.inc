@@ -19,6 +19,7 @@ function environment_drush_command() {
     'options' => array(
       'info' => 'Show the summary of the environment settings instead of running them.',
       'groups' => 'Run only the certain groups. Separate groups with commas.',
+      'skip-summary' => 'Do not print the summary before prompting.',
     ),
     'examples' => array(
       'drush env dev' => 'Run the dev environment settings.',
@@ -95,7 +96,9 @@ function drush_environment($env = NULL) {
   // Set the definition and prepare the environment instructions.
   if ($denver->setEnvironments($env)) {
     // Show the user what will happen if this is run.
-    $denver->printSummary();
+    if (!drush_get_option('skip-summary')) {
+      $denver->printSummary();
+    }
 
     // If the --info option was passed, skip the execution phase.
     if (!drush_get_option('info')) {
