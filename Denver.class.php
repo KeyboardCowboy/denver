@@ -32,6 +32,24 @@ class Denver {
   }
 
   /**
+   * Check if a parameter is an drush option.
+   *
+   * @param string $item
+   *   The parameter to check.
+   *
+   * @return bool
+   *   The option name without the preceding '--' or FALSE if not an option.
+   */
+  public static function isOption($item) {
+    // Special cases.
+    if ($item === '-y') {
+      return 'yes';
+    }
+
+    return (strpos($item, '--') === 0) ? substr($item, 2) : FALSE;
+  }
+
+  /**
    * Whether we found any environment definitions.
    *
    * @return bool
@@ -460,14 +478,25 @@ class Denver {
   public function formatCommand($command, $info) {
     $this->prepareCommand($info);
 
+    // Create the base.
     $parts = ["drush"];
-    $parts[] = !empty($info['alias']) ? $info['alias'] : '@self';
+    $parts[] = $info['alias'];
+
+    // Check for a '--yes' options and set it early for common formatting.
+    if (isset($info['options']['yes'])) {
+      $parts[] = '-y';
+      unset($info['options']['yes']);
+    }
+
+    // Add the command.
     $parts[] = $command;
 
+    // Add arguments.
     if (!empty($info['arguments'])) {
       $parts[] = implode(' ', $info['arguments']);
     }
 
+    // Add options.
     if (!empty($info['options'])) {
       // Skip the config option.
       unset($info['options']['config']);
@@ -494,26 +523,67 @@ class Denver {
   private function prepareCommand(&$info) {
     $info = (array) $info;
 
-    // Set some default values for each command.
-    $info += [
-      'alias' => '@self',
-      'arguments' => [],
-      'options' => [],
-    ];
+    // Pull alias, arguments and options out of the info.
+    $alias = isset($info['alias']) ? $info['alias'] : '@self';
+    $args = isset($info['arguments']) ? $info['arguments'] : array();
+    $opts = isset($info['options']) ? $info['options'] : array();
+    unset($info['alias'], $info['arguments'], $info['options']);
+
+    // Any remaining items in the $info array are shorthand or condensed
+    // settings.  First, check for condensed syntax.  The $info array will be
+    // keyed numerically.
+    foreach ($info as $item => $value) {
+      // Unnamed args and boolean options.
+      if (is_numeric($item) && !is_array($value)) {
+        if ($opt_name = static::isOption($value)) {
+          $opts[$opt_name] = TRUE;
+        }
+        else {
+          $args[] = $value;
+        }
+      }
+      // Key:value items.  Arguments shouldn't have keys in this syntax, but
+      // the could.  Check to be sure.
+      elseif (is_numeric($item) && is_array($value)) {
+        foreach ($value as $item_name => $item_value) {
+          if ($opt_name = static::isOption($item_name)) {
+            $opts[$opt_name] = $item_value;
+          }
+          else {
+            $args[$item_name] = $item_value;
+          }
+        }
+      }
+
+      // Shorthand syntax.
+      elseif (!is_numeric($item) && ($opt_name = self::isOption($item))) {
+        $opts[$opt_name] = $value;
+      }
+      else {
+        $args[$item] = $value;
+      }
+    }
 
     // Convert argument value arrays to comma separated strings.
-    foreach ($info['arguments'] as &$value) {
+    foreach ($args as &$value) {
       if (is_array($value)) {
         $value = implode(',', $value);
       }
     }
 
     // Convert option value arrays to comma separated strings.
-    foreach ($info['options'] as &$value) {
+    foreach ($opts as &$value) {
       if (is_array($value)) {
         $value = implode(',', $value);
       }
     }
+
+    // Rebuild the $info array.
+    $info = array(
+      'alias' => $alias,
+      'options' => $opts,
+      'arguments' => $args,
+    );
   }
 
   /**
