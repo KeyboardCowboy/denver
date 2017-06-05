@@ -19,7 +19,7 @@ function environment_drush_command() {
     'options' => array(
       'info' => 'Show the summary of the environment settings instead of running them.',
       'groups' => 'Run only the certain groups. Separate groups with commas.',
-      'skip-summary' => 'Do not print the summary before prompting.',
+      'show-summary' => 'Print the environment summary before the user prompt.',
     ),
     'examples' => array(
       'drush env dev' => 'Run the dev environment settings.',
@@ -41,20 +41,6 @@ function environment_drush_command() {
       'default' => 'key-value-list',
       'pipe-format' => 'json',
     ),
-  );
-
-  $items['environment-info'] = array(
-    'description' => 'Get info about a specific environment definition.',
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
-    'arguments' => array(
-      'name' => 'The name of an environment definition or compound definitions.',
-    ),
-    'argument required' => TRUE,
-    'examples' => array(
-      'drush env-info dev' => dt("Show the details of the 'dev' environment definition."),
-      'drush env-info dev+chris' => dt("Show the details of the 'dev' and 'local' environment definitions combined."),
-    ),
-    'aliases' => array('env-info', 'envin'),
   );
 
   $items['environment-dir'] = array(
@@ -96,7 +82,7 @@ function drush_environment($env = NULL) {
   // Set the definition and prepare the environment instructions.
   if ($denver->setEnvironments($env)) {
     // Show the user what will happen if this is run.
-    if (!drush_get_option('skip-summary')) {
+    if (drush_get_option('show-summary') || drush_get_option('info')) {
       $denver->printSummary();
     }
 
@@ -125,26 +111,6 @@ function drush_environment_list() {
   }
 
   return $data;
-}
-
-/**
- * Command callback.
- */
-function drush_environment_info($env) {
-  $denver = new Denver();
-
-  // Make sure we found at least one environment definition.
-  if (!$denver->foundEnvironments()) {
-    return drush_log(dt('Unable to find any environment definitions.'), 'error', TRUE);
-  }
-
-  // Set the definition and prepare the environment instructions.
-  if ($denver->setEnvironments($env)) {
-    $denver->printSummary();
-  }
-  else {
-    drush_log(dt("Unable to lookup environments '@envs'", ['@envs' => $env]));
-  }
 }
 
 /**

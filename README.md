@@ -1,8 +1,5 @@
 # Drupal Environment Personalizer
-This is a fork of the sandbox project at https://drupal.org/sandbox/bleen18/1696714
-which is based on the code by Eric Duran at http://drupal.org/sandbox/ericduran/1154642
-
-The Drupal ENVironemnt personalizER allows you to define blanket settings to apply to
+The Drupal ENVironemnt personalizER allows you to define macro settings to apply to
 your site in one command, such as enabling and disabling modules and setting
 variables.
 
@@ -47,19 +44,26 @@ The definitions are formatted as such:
 	
 	variables:
 	  your_var: your_var_value
+	  another_var: NULL
 	
 	permissions:
 	  RoleName:
 		permission_name: 0
 	
 	commands:
+	  # Using longhand notation.
 	  command-name:
 		alias: @self
 		arguments:
 		  arg1: arg1-val
 		options:
 		  opt1: opt1-val
-
+	  # Using shorthand notation.
+	  command-name:
+	    - yes
+	    - arg1
+	    - arg2
+	    - --option1
 
 ## How to Use It
 
@@ -72,13 +76,14 @@ work.
 
 1. See which environments are available.
 
+    `drush env`
     `drush env-list`
 
 2. Inspect the contents of an environment definition.
 
-    `drush env-list [env-name]`
+    `drush env [en-name] --info`
 
-    Ex. `drush env-list dev`
+    Ex. `drush env dev --info`
 
 3. Run the environment settings for a single definition.
 

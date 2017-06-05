@@ -138,6 +138,11 @@ class Denver {
   public function exec($groups = '') {
     $_groups = !empty($groups) ? explode(',', $groups) : array();
 
+    // Print a message that the build is starting.
+    $names = implode('+', array_keys($this->loadedEnvs));
+    drush_print();
+    drush_print($this->formatHeading(dt("--- CONFIGURING @name ENVIRONMENT ---", array('@name' => strtoupper($names))), ''));
+
     foreach ($this->exec as $type => $options) {
       if (!empty($options) && (empty($_groups) || in_array($type, $_groups))) {
         // Print a nice heading.
@@ -171,7 +176,7 @@ class Denver {
 
     drush_print();
     if (drush_get_error()) {
-      drush_set_error('DENVER_ENV_SEUP_FAILEED', dt("The environment may not have been configured the way you wanted.  Check the logs for more details."));
+      drush_set_error('DENVER_ENV_SETUP_FAILED', dt("The environment may not have been configured the way you wanted.  Check the logs for more details."));
       drush_print(dt("Use the --groups option to run only certain sections of an environment definition."));
     }
     else {
@@ -186,12 +191,13 @@ class Denver {
     drush_print();
 
     // Print env files used for this definition.
-    drush_print($this->formatHeading('Environments'));
+    drush_print($this->formatHeading('Environment Definitions Found'));
     foreach ($this->loadedEnvs as $filename) {
       drush_print("{$filename}", 1);
     }
 
     drush_print();
+    drush_print($this->formatHeading(dt("CONFIGURATION SUMMARY")));
 
     // We want to make sure they are printed in the same order as they will run.
     foreach ($this->getActiveDefinition() as $group => $options) {
@@ -594,7 +600,7 @@ class Denver {
    */
   private function loadEnvironment($env) {
     $this->exec = array_merge_recursive_distinct($this->exec, $this->environments[$env]);
-    $this->loadedEnvs[] = $this->exec['filename'];
+    $this->loadedEnvs[$env] = $this->exec['filename'];
     unset($this->exec['filename']);
   }
 
