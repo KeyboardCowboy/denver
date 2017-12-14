@@ -8,16 +8,34 @@
  * Manage environment settings and application.
  */
 class Denver {
-  // Store the paths where we should look for environment settings.
+  /**
+   * Contexts in which to search for environment definitions.
+   * @var array
+   */
+  protected $contexts = ['custom', 'drupal', 'home.drush', 'system'];
+
+  /**
+   * Store the paths where we should look for environment settings.
+   * @var array
+   */
   private $configPaths = [];
 
-  // Store the actual environment definitions found.
+  /**
+   * Store the actual environment definitions found.
+   * @var array
+   */
   private $environments = [];
 
-  // Store the compiled settings that we need to execute.
+  /**
+   * Store the compiled settings that we need to execute.
+   * @var array
+   */
   private $exec = [];
 
-  // Store the loaded environment filepaths.
+  /**
+   * Store the loaded environment filepaths.
+   * @var array
+   */
   private $loadedEnvs = [];
 
   /**
@@ -300,7 +318,7 @@ class Denver {
       drush_print("{$heading}");
 
       foreach ($options as $command => $info) {
-        drush_print($this->formatCommand($command, $info), 1);
+        drush_print($this->formatCommand($info), 1);
       }
       drush_print();
     }
@@ -362,7 +380,7 @@ class Denver {
         if (is_scalar($value)) {
           drush_print(dt("'@var' set to @val.", [
             '@var' => $variable,
-            '@val' => $value
+            '@val' => $value,
           ]));
         }
         else {
@@ -436,17 +454,16 @@ class Denver {
       $default_options['config'] = $config;
     }
 
-    foreach ($commands as $command => &$info) {
+    foreach ($commands as &$info) {
       // Prepare the command.
-      $this->prepareCommand($info);
       $info['options'] += $default_options;
 
       // Tell the user we are invoking the command.
-      drush_print($this->formatHeading("✗") . ' ' . $this->formatCommand($command, $info));
+      drush_print($this->formatHeading("✗") . ' ' . $this->formatCommand($info));
 
       // Invoke the command.
-      if (!drush_invoke_process($info['alias'], $command, $info['arguments'], $info['options'])) {
-        return drush_set_error('COMMAND_FAILED', dt("Failed to execute drush command @command.", ['@command' => $command]));
+      if (!drush_invoke_process($info['alias'], $info['name'], $info['arguments'], $info['options'])) {
+        return drush_set_error('COMMAND_FAILED', dt("Failed to execute drush command @command.", ['@command' => $info['name']]));
       }
 
       drush_print();
@@ -458,7 +475,7 @@ class Denver {
    *
    * @param string $text
    *   The raw heading text.
-   * @param $line_ending
+   * @param string $line_ending
    *   A string to end the heading with.
    *
    * @return string
@@ -473,17 +490,13 @@ class Denver {
   /**
    * Format a command as a single line.
    *
-   * @param string $command
-   *   The command name.
    * @param array|null $info
    *   The command settings.
    *
    * @return string
    *   The formatted command.
    */
-  public function formatCommand($command, $info) {
-    $this->prepareCommand($info);
-
+  public function formatCommand($info) {
     // Create the base.
     $parts = ["drush"];
     $parts[] = $info['alias'];
@@ -494,12 +507,12 @@ class Denver {
       unset($info['options']['yes']);
     }
 
-    // Add the command.
-    $parts[] = $command;
+    // Add the command name.
+    $parts[] = $info['name'];
 
     // Add arguments.
-    if (!empty($info['arguments'])) {
-      $parts[] = implode(' ', $info['arguments']);
+    if (!empty($info['args'])) {
+      $parts[] = implode(' ', $info['args']);
     }
 
     // Add options.
@@ -518,78 +531,6 @@ class Denver {
     }
 
     return implode(' ', $parts);
-  }
-
-  /**
-   * Prepare the command data for output and execution.
-   *
-   * @param array|null $info
-   *    A command definition pulled from the YAML file.
-   */
-  private function prepareCommand(&$info) {
-    $info = (array) $info;
-
-    // Pull alias, arguments and options out of the info.
-    $alias = isset($info['alias']) ? $info['alias'] : '@self';
-    $args = isset($info['arguments']) ? $info['arguments'] : array();
-    $opts = isset($info['options']) ? $info['options'] : array();
-    unset($info['alias'], $info['arguments'], $info['options']);
-
-    // Any remaining items in the $info array are shorthand or condensed
-    // settings.  First, check for condensed syntax.  The $info array will be
-    // keyed numerically.
-    foreach ($info as $item => $value) {
-      // Unnamed args and boolean options.
-      if (is_numeric($item) && !is_array($value)) {
-        if ($opt_name = static::isOption($value)) {
-          $opts[$opt_name] = TRUE;
-        }
-        else {
-          $args[] = $value;
-        }
-      }
-      // Key:value items.  Arguments shouldn't have keys in this syntax, but
-      // the could.  Check to be sure.
-      elseif (is_numeric($item) && is_array($value)) {
-        foreach ($value as $item_name => $item_value) {
-          if ($opt_name = static::isOption($item_name)) {
-            $opts[$opt_name] = $item_value;
-          }
-          else {
-            $args[$item_name] = $item_value;
-          }
-        }
-      }
-
-      // Shorthand syntax.
-      elseif (!is_numeric($item) && ($opt_name = self::isOption($item))) {
-        $opts[$opt_name] = $value;
-      }
-      else {
-        $args[$item] = $value;
-      }
-    }
-
-    // Convert argument value arrays to comma separated strings.
-    foreach ($args as &$value) {
-      if (is_array($value)) {
-        $value = implode(',', $value);
-      }
-    }
-
-    // Convert option value arrays to comma separated strings.
-    foreach ($opts as &$value) {
-      if (is_array($value)) {
-        $value = implode(',', $value);
-      }
-    }
-
-    // Rebuild the $info array.
-    $info = array(
-      'alias' => $alias,
-      'options' => $opts,
-      'arguments' => $args,
-    );
   }
 
   /**
@@ -613,7 +554,7 @@ class Denver {
 
     // Find directories to scan for environment config files.
     // system, 'home.drush', 'drupal', 'custom'
-    foreach (['custom', 'drupal', 'home.drush', 'system'] as $context) {
+    foreach ($this->contexts as $context) {
       if ($files = _drush_config_file($context, 'env')) {
         if (is_array($files)) {
           foreach ($files as $file) {
@@ -629,7 +570,7 @@ class Denver {
     // Remove any empty values.
     $config_paths = array_filter($config_paths);
 
-    // Flip the config list for proper hierarchy
+    // Flip the config list for proper hierarchy.
     $this->configPaths = array_reverse($config_paths);
     drush_log(dt('Loaded config paths.'), 'debug');
   }
@@ -647,7 +588,7 @@ class Denver {
       return FALSE;
     }
 
-    // Check for aliases
+    // Check for aliases.
     $site_name = drush_sitealias_bootstrapped_site_name();
     $alias = drush_sitealias_get_record("@{$site_name}");
 
@@ -662,7 +603,7 @@ class Denver {
       if (file_exists($site_root . '/sites/sites.php')) {
         $sites = [];
 
-        include($site_root . '/sites/sites.php');
+        include $site_root . '/sites/sites.php';
 
         // If we found a match in sites.php and the supposed path is sites/default
         // then replace 'default' with the matching directory.
@@ -708,7 +649,7 @@ class Denver {
    * @param object $file
    *   A file object.
    */
-  private function loadEnvFile($file) {
+  protected function loadEnvFile($file) {
     list($name, ,) = explode('.', $file->name);
     $this->environments[$name] = $this->extractEnv($file->filename);
     $this->environments[$name]['filename'] = $this->parseFilename($file->filename);
@@ -729,7 +670,7 @@ class Denver {
 
     $data = file_get_contents($filename);
     $env = (array) $yaml->parse($data);
-    
+
     // Add defaults.
     $env += [
       'modules' => [],
@@ -742,6 +683,84 @@ class Denver {
     // environment request.
     foreach ($env['modules'] as $status => $modules) {
       $env['modules'][$status] = array_combine($env['modules'][$status], $env['modules'][$status]);
+    }
+
+    // Normalize command structure.
+    $commands = $env['commands'];
+    $env['commands'] = [];
+    foreach ($commands as $command => $info) {
+      $_command = [];
+
+      // Parse out the command name.
+      $_command['name'] = is_numeric($command) ? $info['name'] : $command;
+
+      // Set the alias to run the command against.
+      $_command['alias'] = isset($info['alias']) ? $info['alias'] : '@self';
+
+      foreach ($info as $item => $values) {
+        // Long and medium-form syntax uses arg and option keywords.
+        if (in_array($item, ['args', 'arguments', 'opts', 'options'], TRUE)) {
+          if ($item === 'args' || $item === 'arguments') {
+            // $values will always be an one-dim array in this case.
+            $_command['args'] = $values;
+          }
+          elseif ($item === 'opts' || $item === 'options') {
+            // Opt values may be bool, int, string or arrays, so we need to
+            // process each individually.
+            foreach ($values as $key => $option) {
+              // Long-form.
+              if (!is_numeric($key)) {
+                $_command['options'][$key] = is_array($option) ? implode(',', $option) : $option;
+              }
+              // Med-form.
+              else {
+                // Check for an array of option values.
+                if (is_array($option)) {
+                  foreach ($option as $opt_name => $opt_value) {
+                    $_command['options'][$opt_name] = is_array($opt_value) ? implode(',', $opt_value) : $opt_value;
+                  }
+                }
+
+                // Handle single flags.
+                // @todo: Handle more than just 'yes'.
+                elseif (in_array($option, ['y', 'yes'])) {
+                  $_command['options']['yes'] = TRUE;
+                }
+                // Options with no set value, default to TRUE.
+                else {
+                  $_command['options'][$option] = TRUE;
+                }
+              }
+            }
+          }
+        }
+        // Short-form syntax is a simple series of drush values that we need
+        // to manually parse.  All values, then, must be primitive data types.
+        elseif (is_numeric($item)) {
+          // Check for an array of option values.
+          if (is_array($values)) {
+            foreach ($values as $opt_name => $opt_value) {
+              $opt_name = static::isOption($opt_name);
+              $_command['options'][$opt_name] = is_array($opt_value) ? implode(',', $opt_value) : $opt_value;
+            }
+          }
+
+          // Look for an alias.
+          elseif (strpos($values, '@') === 0) {
+            $_command['alias'] = $values;
+          }
+          // Options with no set value, default to TRUE.
+          elseif ($option = static::isOption($values)) {
+            $_command['options'][$option] = TRUE;
+          }
+          // Default to regular arguments.
+          else {
+            $_command['args'][] = $values;
+          }
+        }
+      }
+
+      $env['commands'][] = $_command;
     }
 
     return $env;
