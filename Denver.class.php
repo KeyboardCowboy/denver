@@ -462,7 +462,7 @@ class Denver {
       drush_print($this->formatHeading("✗") . ' ' . $this->formatCommand($info));
 
       // Invoke the command.
-      if (!drush_invoke_process($info['alias'], $info['name'], $info['arguments'], $info['options'])) {
+      if (!drush_invoke_process($info['alias'], $info['name'], $info['args'], $info['options'])) {
         return drush_set_error('COMMAND_FAILED', dt("Failed to execute drush command @command.", ['@command' => $info['name']]));
       }
 
@@ -759,6 +759,12 @@ class Denver {
           }
         }
       }
+
+      // Set defaults.
+      $_command += [
+        'args' => [],
+        'options' => [],
+      ];
 
       $env['commands'][] = $_command;
     }
